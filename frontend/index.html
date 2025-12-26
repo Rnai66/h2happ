@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>H2H Thailand</title>
+    <meta name="description" content="H2H Thailand — Blue×Gold UI Marketplace" />
+    <meta name="theme-color" content="#0a1230" />
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- PWA / icons (เติมไฟล์จริงภายหลังได้) -->
+    <link rel="icon" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Heading: Chakra Petch | Body: Sarabun | Mono: JetBrains Mono -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+
+    <!-- Global font variables (ปรับใช้ใน CSS ของโปรเจกต์ได้เลย) -->
+    <style>
+      :root{
+        --font-heading: "Chakra Petch", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
+        --font-body: "Sarabun", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      }
+      html, body, #root { height: 100%; }
+      body{
+        margin: 0;
+        font-family: var(--font-body);
+        background: #070f2a; /* Blue-night base */
+        color: #e9eefb;
+      }
+      h1,h2,h3,h4,h5,h6,.title-glow{ font-family: var(--font-heading); }
+      code, pre, .mono { font-family: var(--font-mono); }
+      /* ตัวอย่างโทนสีที่ใช้ร่วมกับคลาสของพี่ */
+      :root{
+        --fg-muted: #9db0d7;
+        --gold: #f7c948;
+      }
+      .title-glow{ text-shadow: 0 0 18px rgba(63, 113, 255, 0.35); }
+      .nav-link{ display:inline-flex; gap:.4rem; align-items:center; padding:.5rem .7rem; border-radius:.6rem; color:#cfe0ff; text-decoration:none; }
+      .nav-link-active{ background: rgba(255,255,255,0.06); color:#fff; }
+      .nav-auth{ background: rgba(255,255,255,0.08); color:#e9eefb; }
+      .nav-auth-gold{ background: rgba(247,201,72,0.15); color: var(--gold); }
+      .nav-badge{ display:inline-flex; gap:.35rem; align-items:center; background: rgba(255,255,255,0.06); padding:.25rem .6rem; border-radius:.75rem; }
+      .section{ max-width:1100px; margin:0 auto; padding: 0 1rem; }
+      .navbar{ backdrop-filter: blur(10px); background: rgba(7,15,42,0.6); border-bottom: 1px solid rgba(255,255,255,0.06); }
+    </style>
+  </head>
+  <body>
+    <noscript>JavaScript จำเป็นสำหรับการใช้งานเว็บไซต์นี้</noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

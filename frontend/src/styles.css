@@ -1,0 +1,5 @@
+html {
+  /* ป้องกันเบราว์เซอร์ขยายตัวอักษรเกินเหตุบน iOS/Safari/Fx */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}

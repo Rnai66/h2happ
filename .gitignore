@@ -1,0 +1,47 @@
+# Node
+node_modules/
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Uploads / User files
+backend/uploads/
+backend/uploads/**
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+
+# Build
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+
+# Temp / Test
+payload.json
+backend/.env
+
+# Env
+.env
+.env.*
+backend/.env
+
+# Env
+.env
+.env.*
+backend/.env
+frontend/.env
+
+# Env
+.env
+.env.*
+backend/.env
+frontend/.env
