@@ -1,0 +1,6 @@
+{
+	"appId": "com.h2h.app",
+	"appName": "H2H App",
+	"webDir": "dist",
+	"packageClassList": []
+}
