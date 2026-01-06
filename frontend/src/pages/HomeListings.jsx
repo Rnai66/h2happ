@@ -57,31 +57,28 @@ export default function HomeListings() {
       <div className="space-y-4">
         <header className="flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl font-semibold">
-              H2H Thailand  สินค้าล่าสุด
+            <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>
+              H2H Thailand สินค้าล่าสุด
             </h1>
             {q && (
-              <p className="text-xs text-slate-500">
+              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                 ผลการค้นหา: "{q}"
               </p>
             )}
           </div>
           <button
             onClick={() => nav("/sell")}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-white
-                       bg-gradient-to-r from-[#2563EB] to-[#D4AF37]
-                       hover:from-[#1D4ED8] hover:to-[#facc15]
-                       shadow-silk active:scale-[.97] transition"
+            className="h2h-btn px-4 py-2 rounded-xl text-sm font-medium shadow-silk active:scale-[.97] transition"
           >
             + ลงขายสินค้า
           </button>
         </header>
 
-        {loading && <p className="text-sm text-slate-500">กำลังโหลด...</p>}
+        {loading && <p className="text-sm" style={{ color: 'var(--text-muted)' }}>กำลังโหลด...</p>}
         {err && <p className="text-sm text-red-500">{err}</p>}
 
         {!loading && !err && items.length === 0 && (
-          <p className="text-sm text-slate-400">
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             ยังไม่มีสินค้าในระบบ ลองลงขายชิ้นแรกเลย!
           </p>
         )}
@@ -90,7 +87,7 @@ export default function HomeListings() {
           {items.map((item) => (
             <Link key={item._id} to={`/items/${item._id}`} className="block">
               <Card>
-                <div className="aspect-square w-full overflow-hidden rounded-t-xl bg-slate-100">
+                <div className="aspect-square w-full overflow-hidden rounded-t-xl bg-slate-100 relative">
                   <img
                     src={item.images?.[0] || "https://picsum.photos/400"}
                     alt={item.title}
@@ -98,14 +95,14 @@ export default function HomeListings() {
                   />
                 </div>
                 <div className="p-3 space-y-1">
-                  <h2 className="text-sm font-semibold line-clamp-2">
+                  <h2 className="text-sm font-semibold line-clamp-2" style={{ color: 'var(--text-main)' }}>
                     {item.title}
                   </h2>
-                  <p className="text-base font-bold text-blue-700">
+                  <p className="text-base font-bold" style={{ color: 'var(--text-accent)' }}>
                     ฿{Number(item.price || 0).toLocaleString("th-TH")}
                   </p>
                   {item.location && (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                       📍 {item.location}
                     </p>
                   )}

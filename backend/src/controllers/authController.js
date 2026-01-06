@@ -5,7 +5,14 @@ import { UserModel } from "../models/User.js";
 
 function signToken(user) {
   return jwt.sign(
-    { id: user._id, email: user.email, role: user.role || "user" },
+    {
+      id: user._id,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role || "user",
+      permissions: user.permissions || []
+    },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
   );
@@ -25,13 +32,26 @@ export async function register(req, res) {
 
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
-    const user = await User.create({ name, email, password: hash, role: "user" });
+    const user = await User.create({
+      name,
+      email: email.toLowerCase(),
+      password: hash,      // ✅ New standard field
+      passwordHash: hash,  // ✅ Legacy compatibility
+      role: "user",
+      permissions: []
+    });
 
     const token = signToken(user);
     return res.status(201).json({
       message: "✅ Register success",
       token,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        permissions: user.permissions || []
+      }
     });
   } catch (err) {
     return res.status(500).json({ message: "Register failed", error: err.message });
@@ -47,17 +67,28 @@ export async function login(req, res) {
     const conn = getConnection(DBNAMES.USER);
     const User = UserModel(conn);
 
-    const user = await User.findOne({ email });
+    // Case insensitive email search
+    const user = await User.findOne({ email: { $regex: new RegExp(`^${email}$`, "i") } });
     if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
-    const ok = await bcrypt.compare(password, user.password);
+    // Check password against either field (legacy support)
+    const storedHash = user.password || user.passwordHash;
+    if (!storedHash) return res.status(401).json({ message: "Invalid credentials (no password set)" });
+
+    const ok = await bcrypt.compare(password, storedHash);
     if (!ok) return res.status(401).json({ message: "Invalid credentials" });
 
     const token = signToken(user);
     return res.json({
       message: "✅ Login success",
       token,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        permissions: user.permissions || []
+      }
     });
   } catch (err) {
     return res.status(500).json({ message: "Login failed", error: err.message });

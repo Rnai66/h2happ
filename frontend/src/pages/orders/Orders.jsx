@@ -62,7 +62,6 @@ export default function OrdersPage() {
 
   const [buyerOrders, setBuyerOrders] = useState([]);
   const [sellerOrders, setSellerOrders] = useState([]);
-  const [allOrders, setAllOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
@@ -87,22 +86,15 @@ export default function OrdersPage() {
           return;
         }
 
-        const res = await api.get(`/orders?page=1&limit=50`);
-        const all = normalizeOrders(res);
+        // Parallel fetch for buyer and seller orders
+        const [buyerRes, sellerRes] = await Promise.all([
+          api.get(`/orders?page=1&limit=50&buyerId=${myId}`),
+          api.get(`/orders?page=1&limit=50&sellerId=${myId}`)
+        ]);
 
-        const myBuyerOrders = all.filter((o) => {
-          const bid = getBuyerIdFromOrder(o);
-          return bid && String(bid) === String(myId);
-        });
+        setBuyerOrders(normalizeOrders(buyerRes));
+        setSellerOrders(normalizeOrders(sellerRes));
 
-        const mySellerOrders = all.filter((o) => {
-          const sid = getSellerIdFromOrder(o);
-          return sid && String(sid) === String(myId);
-        });
-
-        setAllOrders(all);
-        setBuyerOrders(myBuyerOrders);
-        setSellerOrders(mySellerOrders);
       } catch (e) {
         setErr(e.message || "โหลดคำสั่งซื้อไม่สำเร็จ");
       } finally {
@@ -119,10 +111,10 @@ export default function OrdersPage() {
         {/* ===== Header ===== */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--text-main)' }}>
               คำสั่งซื้อของฉัน
             </h1>
-            <p className="text-sm text-white/70">
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
               ดูรายการที่คุณสั่งซื้อ และรายการที่คุณเป็นผู้ขาย
             </p>
           </div>
@@ -156,24 +148,24 @@ export default function OrdersPage() {
 
             {/* ── ฉันเป็นผู้ซื้อ ── */}
             <section>
-              <h2 className="text-lg font-semibold text-white mb-2">
+              <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-main)' }}>
                 ฉันเป็นผู้ซื้อ
               </h2>
 
               {buyerOrders.length === 0 ? (
-                <p className="text-sm text-white/65">
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                   ยังไม่มีคำสั่งซื้อในฐานะผู้ซื้อ
                 </p>
               ) : (
-                <div className="overflow-x-auto rounded-xl
-                                border border-white/15
-                                bg-black/40 backdrop-blur">
+                <div className="overflow-x-auto rounded-xl border backdrop-blur"
+                  style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
                   <table className="min-w-full text-sm">
-                    <thead className="bg-black/40">
+                    <thead style={{ background: 'var(--bg-frame)' }}>
                       <tr>
-                        {["เลขคำสั่งซื้อ","สินค้า","ยอดเงิน","สถานะ","สร้างเมื่อ"].map(h => (
+                        {["เลขคำสั่งซื้อ", "สินค้า", "ยอดเงิน", "สถานะ", "สร้างเมื่อ"].map(h => (
                           <th key={h}
-                              className="px-3 py-2 text-left text-xs font-semibold text-white/70">
+                            className="px-3 py-2 text-left text-xs font-semibold"
+                            style={{ color: 'var(--text-muted)' }}>
                             {h}
                           </th>
                         ))}
@@ -187,37 +179,42 @@ export default function OrdersPage() {
 
                         return (
                           <tr key={o._id}
-                              className="border-t border-white/10 hover:bg-white/5">
-                            <td className="px-3 py-2 font-mono text-xs text-white">
+                            className="border-t transition"
+                            style={{ borderColor: 'var(--border-color)' }}>
+                            <td className="px-3 py-2 font-mono text-xs">
                               <Link
                                 to={`/orders/${o._id}`}
-                                className="text-blue-300 hover:underline">
+                                className="hover:underline"
+                                style={{ color: 'var(--accent-primary)' }}>
                                 {o.orderNumber || o._id}
                               </Link>
                             </td>
 
                             <td className="px-3 py-2">
-                              <div className="text-white">
+                              <div style={{ color: 'var(--text-main)' }}>
                                 {o.itemSnapshot?.title || o.title || "–"}
                               </div>
-                              <div className="text-xs text-white/60">
+                              <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
                                 itemId: {o.itemId}
                               </div>
                             </td>
 
-                            <td className="px-3 py-2 text-right text-yellow-300 font-medium">
+                            <td className="px-3 py-2 text-right font-medium" style={{ color: 'var(--text-accent)' }}>
                               ฿{Number(amount || 0).toLocaleString("th-TH")}
                             </td>
 
                             <td className="px-3 py-2">
-                              <span className="inline-flex items-center rounded-full
-                                               border border-white/20 bg-black/40
-                                               px-2 py-0.5 text-xs text-white/80">
+                              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs border"
+                                style={{
+                                  color: 'var(--text-muted)',
+                                  borderColor: 'var(--border-color)',
+                                  background: 'var(--bg-frame)'
+                                }}>
                                 {statusText} / {payStatus}
                               </span>
                             </td>
 
-                            <td className="px-3 py-2 text-xs text-white/60">
+                            <td className="px-3 py-2 text-xs" style={{ color: 'var(--text-muted)' }}>
                               {formatDate(o.createdAt)}
                             </td>
                           </tr>
@@ -231,24 +228,24 @@ export default function OrdersPage() {
 
             {/* ── ฉันเป็นผู้ขาย ── */}
             <section>
-              <h2 className="text-lg font-semibold text-white mb-2">
+              <h2 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-main)' }}>
                 ฉันเป็นผู้ขาย
               </h2>
 
               {sellerOrders.length === 0 ? (
-                <p className="text-sm text-white/65">
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
                   ยังไม่มีคำสั่งซื้อในฐานะผู้ขาย
                 </p>
               ) : (
-                <div className="overflow-x-auto rounded-xl
-                                border border-white/15
-                                bg-black/40 backdrop-blur">
+                <div className="overflow-x-auto rounded-xl border backdrop-blur"
+                  style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
                   <table className="min-w-full text-sm">
-                    <thead className="bg-black/40">
+                    <thead style={{ background: 'var(--bg-frame)' }}>
                       <tr>
-                        {["เลขคำสั่งซื้อ","สินค้า","ยอดเงิน","ผู้ซื้อ","สถานะ"].map(h => (
+                        {["เลขคำสั่งซื้อ", "สินค้า", "ยอดเงิน", "ผู้ซื้อ", "สถานะ"].map(h => (
                           <th key={h}
-                              className="px-3 py-2 text-left text-xs font-semibold text-white/70">
+                            className="px-3 py-2 text-left text-xs font-semibold"
+                            style={{ color: 'var(--text-muted)' }}>
                             {h}
                           </th>
                         ))}
@@ -257,102 +254,52 @@ export default function OrdersPage() {
                     <tbody>
                       {sellerOrders.map((o) => {
                         const amount = getAmount(o);
-                        const payStatus = getPaymentStatus(o);
+                        // const payStatus = getPaymentStatus(o);
                         const statusText = o.status || o.orderStatus || "pending";
 
                         return (
                           <tr key={o._id}
-                              className="border-t border-white/10 hover:bg-white/5">
-                            <td className="px-3 py-2 font-mono text-xs text-white">
+                            className="border-t transition"
+                            style={{ borderColor: 'var(--border-color)' }}>
+                            <td className="px-3 py-2 font-mono text-xs">
                               <Link
                                 to={`/orders/${o._id}`}
-                                className="text-blue-300 hover:underline">
+                                className="hover:underline"
+                                style={{ color: 'var(--accent-primary)' }}>
                                 {o.orderNumber || o._id}
                               </Link>
                             </td>
 
                             <td className="px-3 py-2">
-                              <div className="text-white">
+                              <div style={{ color: 'var(--text-main)' }}>
                                 {o.itemSnapshot?.title || o.title || "–"}
                               </div>
-                              <div className="text-xs text-white/60">
+                              <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
                                 itemId: {o.itemId}
                               </div>
                             </td>
 
-                            <td className="px-3 py-2 text-right text-yellow-300 font-medium">
+                            <td className="px-3 py-2 text-right font-medium" style={{ color: 'var(--text-accent)' }}>
                               ฿{Number(amount || 0).toLocaleString("th-TH")}
                             </td>
 
-                            <td className="px-3 py-2 text-xs text-white/70">
-                              buyerId: {getBuyerIdFromOrder(o) || "-"}
+                            <td className="px-3 py-2" style={{ color: 'var(--text-main)' }}>
+                              <div>{o.buyerSnapshot?.name || "–"}</div>
                             </td>
 
                             <td className="px-3 py-2">
-                              <span className="inline-flex items-center rounded-full
-                                               border border-white/20 bg-black/40
-                                               px-2 py-0.5 text-xs text-white/80">
-                                {statusText} / {payStatus}
+                              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs border"
+                                style={{
+                                  color: 'var(--text-muted)',
+                                  borderColor: 'var(--border-color)',
+                                  background: 'var(--bg-frame)'
+                                }}>
+                                {statusText}
                               </span>
                             </td>
                           </tr>
                         );
                       })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
-
-            {/* ── Debug ── */}
-            <section>
-              <h2 className="text-sm font-semibold text-white/80 mb-1">
-                ทุกคำสั่งซื้อในระบบ (debug)
-              </h2>
-              <p className="text-xs text-white/50 mb-2">
-                ทั้งหมด: {allOrders.length} ออเดอร์
-              </p>
-
-              {allOrders.length > 0 && (
-                <div className="overflow-x-auto rounded-xl
-                                border border-white/10
-                                bg-black/30">
-                  <table className="min-w-full text-xs">
-                    <thead className="bg-black/40">
-                      <tr>
-                        {["id","item","buyerId","sellerId","status"].map(h => (
-                          <th key={h}
-                              className="px-2 py-1 text-left font-semibold text-white/60">
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allOrders.map((o) => (
-                        <tr key={`debug-${o._id}`}
-                            className="border-t border-white/10 hover:bg-white/5">
-                          <td className="px-2 py-1 font-mono">
-                            <Link
-                              to={`/orders/${o._id}`}
-                              className="text-blue-300 hover:underline">
-                              {o._id}
-                            </Link>
-                          </td>
-                          <td className="px-2 py-1 text-white/80">
-                            {o.itemSnapshot?.title || o.title || "–"}
-                          </td>
-                          <td className="px-2 py-1 text-white/60">
-                            {String(getBuyerIdFromOrder(o) || o.buyerId || "-")}
-                          </td>
-                          <td className="px-2 py-1 text-white/60">
-                            {String(getSellerIdFromOrder(o) || o.sellerId || "-")}
-                          </td>
-                          <td className="px-2 py-1 text-white/70">
-                            {o.status || o.orderStatus || "pending"}
-                          </td>
-                        </tr>
-                      ))}
                     </tbody>
                   </table>
                 </div>

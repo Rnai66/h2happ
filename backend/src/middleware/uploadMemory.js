@@ -10,5 +10,5 @@ function fileFilter(_req, file, cb) {
 export const uploadMemory = multer({
   storage: multer.memoryStorage(),
   fileFilter,
-  limits: { fileSize: 6 * 1024 * 1024 }, // 6MB/รูป
+  limits: { fileSize: 32 * 1024 * 1024 }, // ✅ เพิ่มเป็น 32MB รองรับรูปจากกล้องมือถือละเอียดสูง
 });

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { getConnection, DBNAMES } from "../config/dbPool.js";
 import { UserModel } from "../models/User.js";
-import { protect, authorize } from "../middleware/auth.js";
+import protect, { authorize } from "../middleware/auth.js";
 import bcrypt from "bcryptjs";
 import { parsePaging as _parsePaging } from "../helpers/pagination.js";
 import mongoose from "mongoose";
@@ -132,16 +132,19 @@ router.put("/:id", protect, authorize("admin"), async (req, res) => {
     if (!isValidObjectId(req.params.id)) {
       return res.status(400).json({ message: "Invalid user id" });
     }
-    const { name, email, role } = req.body;
+    const { name, email, role, permissions } = req.body;
     const update = {};
 
     if (name) update.name = String(name).trim();
     if (email) update.email = String(email).trim().toLowerCase();
     if (role) {
-      if (role !== "admin" && role !== "user") {
+      if (role !== "admin" && role !== "user" && role !== "moderator") {
         return res.status(400).json({ message: "Invalid role" });
       }
       update.role = role;
+    }
+    if (permissions && Array.isArray(permissions)) {
+      update.permissions = permissions;
     }
 
     const conn = getConnection(DBNAMES.USER);

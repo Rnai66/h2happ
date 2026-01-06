@@ -119,10 +119,48 @@ export default function MyListings() {
     }
   }
 
+  const [stats, setStats] = useState(null);
+
+  async function loadStats() {
+    try {
+      const res = await authFetch("/api/orders/stats/seller");
+      if (res.ok && res.stats) {
+        setStats(res.stats);
+      }
+    } catch (e) {
+      console.error("Failed to load stats", e);
+    }
+  }
+
   useEffect(() => {
     loadAll();
+    loadStats();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /* Dashboard Stats Card Component */
+  function StatCard({ label, value, sub, icon, bg }) {
+    return (
+      <div className={`
+        relative overflow-hidden rounded-2xl p-4 shadow-silk
+        border border-white/40 backdrop-blur-md
+        flex flex-col justify-between
+        transition hover:-translate-y-1 hover:shadow-lg
+        ${bg || "bg-white/30"}
+      `}>
+        <div className="absolute top-0 right-0 p-3 opacity-20 text-4xl pointer-events-none">
+          {icon}
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">{label}</p>
+          <div className="text-2xl font-bold mt-1 text-slate-800 font-mono">
+            {value}
+          </div>
+        </div>
+        {sub && <p className="text-[10px] text-slate-500 mt-2 font-medium">{sub}</p>}
+      </div>
+    );
+  }
 
   function moveItemOptimistic(itemId, from, to, patch = {}) {
     setLists((prev) => {
@@ -241,8 +279,8 @@ export default function MyListings() {
       <div className="max-w-2xl mx-auto p-4 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl font-semibold">สินค้าของฉัน</h1>
-            <p className="text-xs text-slate-600">จัดการรายการขาย</p>
+            <h1 className="text-xl font-semibold">Seller Center</h1>
+            <p className="text-xs text-slate-600">แดชบอร์ดผู้ขาย & จัดการสินค้า</p>
           </div>
 
           <Link
@@ -252,6 +290,40 @@ export default function MyListings() {
             + ลงขาย
           </Link>
         </div>
+
+        {/* Dashboard Stats */}
+        {stats && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+            <StatCard
+              label="รายได้รวม"
+              value={`฿${formatTHB(stats.totalRevenue)}`}
+              sub={`${stats.paidCount} คำสั่งซื้อที่สำเร็จ`}
+              icon="💰"
+              bg="bg-gradient-to-br from-amber-50/80 to-amber-100/50"
+            />
+            <StatCard
+              label="รอจัดส่ง"
+              value={stats.pendingCount}
+              sub="คำสั่งซื้อที่รอดำเนินการ"
+              icon="📦"
+              bg="bg-gradient-to-br from-blue-50/80 to-blue-100/50"
+            />
+            <StatCard
+              label="ลงขายแล้ว"
+              value={counts.active}
+              sub="สินค้าที่กำลังแสดง"
+              icon="🛍"
+              bg="bg-gradient-to-br from-emerald-50/80 to-emerald-100/50"
+            />
+            <StatCard
+              label="ขายออกแล้ว"
+              value={counts.sold}
+              sub="สินค้าที่ขายได้ทั้งหมด"
+              icon="🏷"
+              bg="bg-gradient-to-br from-purple-50/80 to-purple-100/50"
+            />
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-2 overflow-x-auto pb-1">
@@ -350,47 +422,47 @@ export default function MyListings() {
 
                       {/* Actions */}
                       <div className="flex flex-wrap gap-2 mt-3">
-  <Link
-    to={`/sell?edit=${it._id}`}
-    className="text-xs px-3 py-2 rounded-lg border border-slate-200"
-  >
-    Edit
-  </Link>
+                        <Link
+                          to={`/sell?edit=${it._id}`}
+                          className="text-xs px-3 py-2 rounded-lg border border-slate-200"
+                        >
+                          Edit
+                        </Link>
 
-  {isDraft && (
-    <button
-      onClick={() => patchStatus(it, "active")}
-      className="text-xs px-3 py-2 rounded-lg bg-blue-600 text-white"
-    >
-      Publish
-    </button>
-  )}
+                        {isDraft && (
+                          <button
+                            onClick={() => patchStatus(it, "active")}
+                            className="text-xs px-3 py-2 rounded-lg bg-blue-600 text-white"
+                          >
+                            Publish
+                          </button>
+                        )}
 
-  {isActive && (
-    <>
-      <button
-        onClick={() => patchStatus(it, "sold")}
-        className="text-xs px-3 py-2 rounded-lg border border-slate-200"
-      >
-        Mark Sold
-      </button>
-      <button
-        onClick={() => patchStatus(it, "draft")}
-        className="text-xs px-3 py-2 rounded-lg border border-slate-200"
-      >
-        Unpublish
-      </button>
-    </>
-  )}
+                        {isActive && (
+                          <>
+                            <button
+                              onClick={() => patchStatus(it, "sold")}
+                              className="text-xs px-3 py-2 rounded-lg border border-slate-200"
+                            >
+                              Mark Sold
+                            </button>
+                            <button
+                              onClick={() => patchStatus(it, "draft")}
+                              className="text-xs px-3 py-2 rounded-lg border border-slate-200"
+                            >
+                              Unpublish
+                            </button>
+                          </>
+                        )}
 
-  {isSold && (
-    <button
-      onClick={() => patchStatus(it, "active")}
-      className="text-xs px-3 py-2 rounded-lg border border-slate-200"
-    >
-      Relist
-    </button>
-  )}
+                        {isSold && (
+                          <button
+                            onClick={() => patchStatus(it, "active")}
+                            className="text-xs px-3 py-2 rounded-lg border border-slate-200"
+                          >
+                            Relist
+                          </button>
+                        )}
 
 
 

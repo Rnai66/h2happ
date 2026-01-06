@@ -3,6 +3,7 @@ import express from "express";
 import mongoose from "mongoose";
 import { OrderModel } from "../models/OrderModel.js";
 import { ItemModel } from "../models/ItemModel.js";
+import auth from "../middleware/auth.js";
 
 const router = express.Router();
 
@@ -18,6 +19,60 @@ function genOrderNumber() {
     .padStart(4, "0");
   return `H2H-${year}-${rand}`;
 }
+
+/**
+ * GET /api/orders/stats/seller
+ * Returns aggregated stats for the seller Dashboard
+ */
+router.get("/stats/seller", auth, async (req, res, next) => {
+  try {
+    const sellerId = req.user.id;
+    // ensure strings if needed, but usually match directly
+
+    // Aggregation
+    const stats = await Order.aggregate([
+      { $match: { sellerId: sellerId, isDeleted: false } }, // Ensure we match string/string
+      {
+        $group: {
+          _id: null,
+          totalOrders: { $sum: 1 },
+          totalRevenue: {
+            $sum: {
+              $cond: [{ $eq: ["$paymentStatus", "paid"] }, "$amount", 0],
+            },
+          },
+          pendingCount: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "pending"] }, 1, 0],
+            },
+          },
+          paidCount: {
+            $sum: {
+              $cond: [{ $eq: ["$paymentStatus", "paid"] }, 1, 0],
+            },
+          },
+          completedCount: {
+            $sum: {
+              $cond: [{ $eq: ["$status", "completed"] }, 1, 0],
+            },
+          },
+        },
+      },
+    ]);
+
+    const result = stats[0] || {
+      totalOrders: 0,
+      totalRevenue: 0,
+      pendingCount: 0,
+      paidCount: 0,
+      completedCount: 0,
+    };
+
+    return res.json({ ok: true, stats: result });
+  } catch (err) {
+    next(err);
+  }
+});
 
 /**
  * CREATE ORDER (ไม่ผูก auth ตอนนี้)

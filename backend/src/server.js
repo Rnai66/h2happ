@@ -9,6 +9,7 @@ import { connectDB } from "./config/db.js";
 
 import healthRoutes from "./routes/healthRoutes.js";
 import authRoutes from "./routes/auth.js";
+import usersRoutes from "./routes/users.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import itemRoutes from "./routes/item.routes.js";
@@ -58,6 +59,7 @@ app.use("/api/pay/paypal", paypalRoutes);
 // Health / Auth / Chat
 app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/users", usersRoutes); // Added users routes
 app.use("/api/chat", chatRoutes);
 
 // Orders / Items
@@ -96,9 +98,21 @@ app.use((err, _req, res, _next) => {
 // Boot server
 const PORT = process.env.PORT || 4010;
 connectDB().then(() => {
-  app.listen(PORT, () =>
+  const server = app.listen(PORT, () =>
     console.log(`🚀 H2H Backend running on port ${PORT}`)
   );
+
+  // Graceful shutdown
+  const shutdown = () => {
+    console.log("🛑 SIGTERM/SIGINT received. Closing server...");
+    server.close(() => {
+      console.log("✅ Server closed.");
+      process.exit(0);
+    });
+  };
+
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
 });
 
 // Logs (optional)

@@ -2,9 +2,15 @@
 import express from "express";
 import { Item } from "../models/Item.js";
 import auth from "../middleware/auth.js";
-import { User } from "../models/User.js";
+import { getConnection, DBNAMES } from "../config/dbPool.js";
+import { UserModel } from "../models/User.js";
 
 const router = express.Router();
+
+function getUserModel() {
+  const conn = getConnection(DBNAMES.USER);
+  return UserModel(conn);
+}
 
 function normalizeStatus(raw, fallback = "draft") {
   const allowed = new Set(["draft", "active", "reserved", "sold", "hidden"]);
@@ -84,10 +90,21 @@ router.get("/", async (req, res, next) => {
  * ✅ match เฉพาะ ObjectId กันชน /me
  * =========================
  */
+// GET /api/items/:id (public)
 router.get("/:id([0-9a-fA-F]{24})", async (req, res, next) => {
   try {
     const it = await Item.findOne({ _id: req.params.id, isDeleted: { $ne: true } }).lean();
     if (!it) return res.status(404).json({ message: "Item not found" });
+
+    // ✅ Lookup Seller Info
+    if (it.sellerId) {
+      const User = getUserModel();
+      const seller = await User.findById(it.sellerId).select("name email phone").lean();
+      if (seller) {
+        it.seller = seller; // Attach full seller object
+      }
+    }
+
     return res.json(it);
   } catch (err) {
     next(err);
@@ -141,6 +158,7 @@ router.post("/", auth, async (req, res, next) => {
 
     // ถ้ายังไม่เป็น seller → อัปเดต role
     if (req.user.role !== "seller") {
+      const User = getUserModel();
       await User.findByIdAndUpdate(sellerId, { role: "seller" });
     }
 

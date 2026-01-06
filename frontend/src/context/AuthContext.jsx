@@ -85,6 +85,18 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // ✅ RBAC Helpers
+  const isAdmin = user?.role === "admin";
+
+  function hasRole(roleName) {
+    return user?.role === roleName;
+  }
+
+  function hasPermission(permissionName) {
+    if (isAdmin) return true; // Admin gets everything
+    return user?.permissions?.includes(permissionName);
+  }
+
   // 🔐 Login
   async function login({ email, password }) {
     const res = await api("/auth/login", {
@@ -167,6 +179,9 @@ export function AuthProvider({ children }) {
         register,
         logout,
         refreshProfile: fetchProfile,
+        isAdmin,
+        hasRole,
+        hasPermission,
       }}
     >
       {children}

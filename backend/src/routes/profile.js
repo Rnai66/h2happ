@@ -1,9 +1,15 @@
 // backend/src/routes/profile.js
 import { Router } from "express";
-import auth from "../middleware/auth.js"; // default export
-import User from "../models/User.js";
+import auth from "../middleware/auth.js";
+import { getConnection, DBNAMES } from "../config/dbPool.js";
+import { UserModel } from "../models/User.js";
 
 const router = Router();
+
+function getUserModel() {
+  const conn = getConnection(DBNAMES.USER);
+  return UserModel(conn);
+}
 
 /**
  * GET /api/profile/me
@@ -28,6 +34,7 @@ router.get("/me", auth, async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
+    const User = getUserModel();
     const user = await User.findById(userId).select("-passwordHash -password");
     if (!user) {
       return res.status(404).json({ message: "User not found" });

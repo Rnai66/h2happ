@@ -47,3 +47,11 @@ api.get = (path) => api(path, { method: "GET" });
 
 api.post = (path, body = {}) =>
   api(path, { method: "POST", body: JSON.stringify(body) });
+
+api.put = (path, body = {}) =>
+  api(path, { method: "PUT", body: JSON.stringify(body) });
+
+api.patch = (path, body = {}) =>
+  api(path, { method: "PATCH", body: JSON.stringify(body) });
+
+api.delete = (path) => api(path, { method: "DELETE" });

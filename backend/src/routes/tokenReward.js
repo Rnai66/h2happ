@@ -1,8 +1,15 @@
+// backend/src/routes/tokenReward.js
 import { Router } from "express";
 import auth from "../middleware/auth.js";
-import User from "../models/User.js";
+import { getConnection, DBNAMES } from "../config/dbPool.js";
+import { UserModel } from "../models/User.js";
 
 const router = Router();
+
+function getUserModel() {
+  const conn = getConnection(DBNAMES.USER);
+  return UserModel(conn);
+}
 
 /**
  * POST /api/token/reward
@@ -18,6 +25,7 @@ router.post("/reward", auth, async (req, res) => {
     }
 
     const userId = req.user.id || req.user._id;
+    const User = getUserModel();
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 

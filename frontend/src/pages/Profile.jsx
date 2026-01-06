@@ -1,10 +1,13 @@
 // frontend/src/pages/Profile.jsx
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../lib/api";
 import { getToken } from "../lib/auth";
+import { useAuth } from "../context/AuthContext";
 
 export default function Profile({ me: meFromApp, toast }) {
+  const { logout } = useAuth();
+  const nav = useNavigate();
   const [me, setMe] = useState(meFromApp || null);
   const [loading, setLoading] = useState(!meFromApp);
   const [error, setError] = useState("");
@@ -20,7 +23,7 @@ export default function Profile({ me: meFromApp, toast }) {
     try {
       setLoading(true);
       setError("");
-      const res = await api("/api/auth/profile"); // api ใส่ Authorization ให้อัตโนมัติแล้ว
+      const res = await api("/profile/me"); // api ใส่ Authorization ให้อัตโนมัติแล้ว
       setMe(res.user || null);
     } catch (e) {
       setError(e.message || "โหลดโปรไฟล์ไม่สำเร็จ");
@@ -108,6 +111,21 @@ export default function Profile({ me: meFromApp, toast }) {
         <Link to="/items" className="px-3 py-2 rounded-lg bg-blue-700 text-white">
           ไปหน้า Items
         </Link>
+      </div>
+
+      <div className="pt-4 border-t border-white/10">
+        <button
+          type="button"
+          onClick={() => {
+            if (window.confirm("ต้องการออกจากระบบ?")) {
+              logout();
+              nav("/auth?tab=login");
+            }
+          }}
+          className="w-full py-3 rounded-xl bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30 transition font-medium"
+        >
+          ออกจากระบบ (Logout)
+        </button>
       </div>
     </div>
   );
