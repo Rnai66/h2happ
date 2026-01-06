@@ -9,7 +9,7 @@ function maxImagesByRole(role) {
   const r = String(role || "").toLowerCase();
   if (r === "admin") return 20;
   if (r === "seller_pro" || r === "pro") return 12;
-  return 6;
+  return 10;
 }
 
 function uploadBufferToCloudinary(buffer, opts = {}) {

@@ -21,7 +21,7 @@ function maxImagesByRole(role) {
   if (r === "admin") return 20;
   if (r === "seller_pro" || r === "pro") return 12;
   // seller / user ปกติ
-  return 6;
+  return 10;
 }
 
 export default function SellItem() {

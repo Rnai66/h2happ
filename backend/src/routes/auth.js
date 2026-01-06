@@ -51,7 +51,8 @@ router.post("/register", async (req, res, next) => {
     const user = await User.create({
       name,
       email: email.toLowerCase(),
-      passwordHash,
+      password: passwordHash, // ✅ Fix: Populate required 'password' field
+      passwordHash,           // Keep legacy for safety
       role: "user",
     });
 
@@ -90,7 +91,14 @@ router.post("/login", async (req, res, next) => {
       return res.status(401).json({ message: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
     }
 
-    const ok = await bcrypt.compare(password, user.passwordHash);
+    // Check password (support both new 'password' and legacy 'passwordHash')
+    const hash = user.password || user.passwordHash;
+    if (!hash) {
+      console.error("User found but no password hash:", user._id);
+      return res.status(401).json({ message: "ข้อมูลผู้ใช้ไม่ถูกต้อง (No Password)" });
+    }
+
+    const ok = await bcrypt.compare(password, hash);
     if (!ok) {
       return res.status(401).json({ message: "อีเมลหรือรหัสผ่านไม่ถูกต้อง" });
     }
