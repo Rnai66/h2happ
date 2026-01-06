@@ -1,0 +1,12 @@
+{
+  "name": "h2h-thailand",
+  "version": "0.1.3",
+  "private": true,
+  "scripts": {
+    "dev:all": "concurrently \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "install:all": "npm i --prefix backend && npm i --prefix frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
