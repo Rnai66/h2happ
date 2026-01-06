@@ -198,10 +198,10 @@ export default function SellItem() {
 
     if (!form.title.trim()) return setError("กรุณากรอกชื่อสินค้า");
     if (!form.price || Number(form.price) <= 0) return setError("กรุณากรอกราคาให้ถูกต้อง");
-    // ✅ บังคับรูปขั้นต่ำ 4 รูป (เช็คจาก uploaded หรือ files ที่รอ upload)
+    // ✅ บังคับรูปขั้นต่ำ 1 รูป (เช็คจาก uploaded หรือ files ที่รอ upload)
     const totalImages = uploaded.length + files.length + parseManualUrls(form.imageUrls).length;
-    if (totalImages < 4) {
-      return setError("กรุณาอัปโหลดรูปภาพสินค้าอย่างน้อย 4 รูป เพื่อความน่าเชื่อถือ");
+    if (totalImages < 1) {
+      return setError("กรุณาอัปโหลดรูปภาพสินค้าอย่างน้อย 1 รูป");
     }
 
     setLoading(true);
