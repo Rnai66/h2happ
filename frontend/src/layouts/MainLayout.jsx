@@ -47,7 +47,7 @@ function H2HHeader() {
         >
           <input
             type="text"
-            placeholder="🔍 ค้นหาสินค้า..."
+            placeholder="🔍 Ai ค้นหา..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="h2h-input w-full md:w-72 border-2 focus:ring-2 shadow-sm"
@@ -214,7 +214,7 @@ function MobileHeader() {
       <form onSubmit={onSubmit} className="relative w-full">
         <input
           type="text"
-          placeholder="🔍 ค้นหาสินค้า..."
+          placeholder="🔍 Ai ค้นหา..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="w-full rounded-2xl border-2

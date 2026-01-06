@@ -172,7 +172,7 @@ export default function Search() {
 
         {/* ===== Header ===== */}
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-main)' }}>🔍 Search</h1>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-main)' }}>🔍 Search Ai</h1>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             คำค้นหา: <b style={{ color: 'var(--text-main)' }}>{query || "-"}</b>
           </p>
