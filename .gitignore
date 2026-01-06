@@ -45,3 +45,5 @@ frontend/.env
 .env.*
 backend/.env
 frontend/.env
+
+DEPLOYMENT_SECRETS.txt

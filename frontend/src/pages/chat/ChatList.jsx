@@ -3,20 +3,24 @@ import { useEffect, useState } from "react";
 import MainLayout from "../../layouts/MainLayout";
 import Card from "../../components/ui/Card";
 import { api } from "../../lib/api";
-import { getUser } from "../../lib/auth";
+import { useAuth } from "../../context/AuthContext";
 
 export default function ChatList() {
   const nav = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    const u = getUser();
-    if (!u) {
+    if (authLoading) return; // Wait for auth check to finish
+    if (!user) {
       nav(`/auth?tab=login&redirectTo=${encodeURIComponent("/chat")}`);
-      return;
     }
+  }, [user, authLoading, nav]);
+
+  useEffect(() => {
+    if (!user) return; // Wait for user
 
     (async () => {
       try {
@@ -44,7 +48,7 @@ export default function ChatList() {
 
         {/* ===== Title ===== */}
         <div className="h2h-titlebar">
-          <h1 className="h2h-title" style={{ color: 'var(--text-main)' }}>แชตของฉัน</h1>
+          <h1 className="h2h-title" style={{ color: 'var(--text-main)' }}>แชตของ {user?.name || "ฉัน"}</h1>
           <p className="h2h-subtitle" style={{ color: 'var(--text-muted)' }}>รายการสนทนาล่าสุด</p>
         </div>
 
