@@ -1,12 +1,1 @@
 .vercel
-node_modules
-# Capacitor generated web assets (do not commit)
-android/app/src/main/assets/public/assets/
-android/app/src/main/assets/public/cordova*.js
-android/app/src/main/assets/public/cordova_plugins.js
-
-ios/App/App/public/assets/
-ios/App/App/public/cordova*.js
-ios/App/App/public/cordova_plugins.js
-
-

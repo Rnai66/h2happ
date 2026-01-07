@@ -111,11 +111,10 @@ export default function ChatThreadPage() {
       <div className="h2h-chat max-w-3xl mx-auto space-y-4">
         {/* ===== Header: Item Info ===== */}
         {item && (
-          <Card style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+          <Card>
             <div className="p-4 flex gap-3 items-center">
-              <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0
-                              grid place-content-center border"
-                style={{ background: 'var(--bg-frame)', borderColor: 'var(--border-color)' }}>
+              <div className="w-16 h-16 rounded-xl bg-black/40 overflow-hidden flex-shrink-0
+                              grid place-content-center border border-white/15">
                 {item.images?.[0] ? (
                   <img
                     src={item.images[0]}
@@ -123,23 +122,23 @@ export default function ChatThreadPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="text-xl" style={{ opacity: 0.6 }}>📦</span>
+                  <span className="text-white/60 text-xl">📦</span>
                 )}
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold truncate" style={{ color: 'var(--text-main)' }}>
+                <div className="text-sm font-semibold text-white truncate">
                   {item.title}
                 </div>
-                <div className="text-sm font-semibold" style={{ color: 'var(--text-accent)' }}>
+                <div className="text-sm text-yellow-300 font-semibold">
                   ฿{Number(item.price || 0).toLocaleString("th-TH")}
                 </div>
-                <div className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
+                <div className="text-xs text-white/70 truncate">
                   {item.location || "ยังไม่ระบุสถานที่นัดรับ"}
                 </div>
-                <div className="mt-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                <div className="mt-1 text-[11px] text-white/60">
                   คุณเป็น{" "}
-                  <span className="font-semibold" style={{ color: 'var(--text-main)' }}>
+                  <span className="font-semibold text-white">
                     {isBuyer ? "ผู้ซื้อ" : "ผู้ขาย"}
                   </span>{" "}
                   ในดีลนี้
@@ -150,7 +149,7 @@ export default function ChatThreadPage() {
         )}
 
         {/* ===== Chat Box ===== */}
-        <Card style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+        <Card>
           <div className="p-4">
             <ChatBox
               token={isAuthenticated}
@@ -158,7 +157,6 @@ export default function ChatThreadPage() {
               buyerId={thread.buyerId}
               sellerId={thread.sellerId}
               itemId={thread.itemId}
-              price={item?.price} // Pass price for offer calculations
               onCreateOrder={handleCreateOrder}
             />
           </div>

@@ -172,9 +172,9 @@ export default function Search() {
 
         {/* ===== Header ===== */}
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-main)' }}>🔍 Search Ai</h1>
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            คำค้นหา: <b style={{ color: 'var(--text-main)' }}>{query || "-"}</b>
+          <h1 className="text-2xl font-bold text-white">🔍 Search</h1>
+          <p className="text-sm text-white/70">
+            คำค้นหา: <b className="text-white">{query || "-"}</b>
           </p>
         </div>
 
@@ -202,25 +202,23 @@ export default function Search() {
                   key={it._id}
                   className="h2h-card cursor-pointer"
                   onClick={() => nav(`/items/${it._id}`)}
-                  style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
                 >
                   <div className="p-4 space-y-2">
                     <img
                       src={it.images?.[0] || "https://placehold.co/400x300?text=H2H"}
                       alt={it.title}
-                      className="w-full h-40 object-cover rounded-lg border"
-                      style={{ borderColor: 'var(--border-color)' }}
+                      className="w-full h-40 object-cover rounded-lg border border-white/15"
                     />
-                    <div className="font-semibold truncate" style={{ color: 'var(--text-main)' }}>{it.title}</div>
-                    <div className="font-bold" style={{ color: 'var(--accent-primary)' }}>{thb(it.price)}</div>
-                    <div className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{it.location || "—"}</div>
+                    <div className="font-semibold text-white truncate">{it.title}</div>
+                    <div className="text-yellow-300 font-bold">{thb(it.price)}</div>
+                    <div className="text-xs text-white/60 truncate">{it.location || "—"}</div>
                   </div>
                 </Card>
               ))}
             </div>
 
             {query && filtered.length > 0 && (
-              <div className="text-xs" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>
+              <div className="text-xs text-white/50">
                 * ค้นหาจากสินค้าที่มีอยู่ในระบบ H2H (Safe Mode)
               </div>
             )}
@@ -234,48 +232,45 @@ export default function Search() {
               <p className="text-white/60">ใส่คำค้นใน URL เช่น /search?q=ข้าว</p>
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="h2h-card p-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-                  <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-main)' }}>🔎 ราคาอ้างอิงจาก Google</h3>
-                  <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                <div className="h2h-card p-4">
+                  <h3 className="text-sm font-semibold text-white mb-1">🔎 ราคาอ้างอิงจาก Google</h3>
+                  <p className="text-xs text-white/60 mb-2">
                     เปิดดูราคาตลาดภายนอกเพื่อเปรียบเทียบ (ปลอดภัย ไม่ scrape)
                   </p>
                   <a
                     href={googlePriceUrl(query)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm hover:underline"
-                    style={{ color: 'var(--accent-primary)' }}
+                    className="text-blue-300 text-sm hover:underline"
                   >
                     👉 ดูผลการค้นหา “{query} ราคา”
                   </a>
 
-                  <div className="mt-3 text-xs" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>
+                  <div className="mt-3 text-xs text-white/50">
                     Tip: คัดลอกราคาเฉลี่ยจากเว็บภายนอก แล้วเทียบกับ H2H ในแท็บ AI
                   </div>
                 </div>
 
-                <div className="h2h-card p-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-                  <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-main)' }}>📍 พิกัด / พื้นที่จาก Google Maps</h3>
-                  <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
+                <div className="h2h-card p-4">
+                  <h3 className="text-sm font-semibold text-white mb-1">📍 พิกัด / พื้นที่จาก Google Maps</h3>
+                  <p className="text-xs text-white/60 mb-2">
                     ดูตำแหน่งร้านหรือพื้นที่จำหน่าย (เปิดแท็บใหม่)
                   </p>
                   <a
                     href={googleMapUrl(query)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm hover:underline"
-                    style={{ color: 'var(--accent-primary)' }}
+                    className="text-blue-300 text-sm hover:underline"
                   >
                     👉 ค้นหา “{query}” บน Google Maps
                   </a>
                 </div>
 
-                <div className="h2h-card p-4 md:col-span-2" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-                  <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--text-main)' }}>🔗 ลิงก์ค้นหาเพิ่มเติม</h3>
+                <div className="h2h-card p-4 md:col-span-2">
+                  <h3 className="text-sm font-semibold text-white mb-2">🔗 ลิงก์ค้นหาเพิ่มเติม</h3>
                   <div className="flex flex-wrap gap-2">
                     <a
-                      className="text-sm hover:underline"
-                      style={{ color: 'var(--accent-primary)' }}
+                      className="text-blue-300 text-sm hover:underline"
                       href={googleSearchUrl(`${query} มือสอง ราคา`)}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -283,8 +278,7 @@ export default function Search() {
                       มือสอง ราคา
                     </a>
                     <a
-                      className="text-sm hover:underline"
-                      style={{ color: 'var(--accent-primary)' }}
+                      className="text-blue-300 text-sm hover:underline"
                       href={googleSearchUrl(`${query} รีวิว`)}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -292,8 +286,7 @@ export default function Search() {
                       รีวิว
                     </a>
                     <a
-                      className="text-sm hover:underline"
-                      style={{ color: 'var(--accent-primary)' }}
+                      className="text-blue-300 text-sm hover:underline"
                       href={googleSearchUrl(`${query} ใกล้ฉัน`)}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -316,48 +309,51 @@ export default function Search() {
               <div className="space-y-4">
                 {/* Rule-based */}
                 {aiRule ? (
-                  <div className="h2h-card p-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-                    <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-main)' }}>
+                  <div className="h2h-card p-4">
+                    <h3 className="text-sm font-semibold text-white mb-1">
                       🤖 AI แนะนำราคา (Rule-based จากข้อมูล H2H)
                     </h3>
                     <p
-                      className="text-sm"
-                      style={{
-                        color: aiRule.level === "good" ? 'var(--accent-primary)' : aiRule.level === "fair" ? 'var(--text-accent)' : 'red'
-                      }}
+                      className={`text-sm ${
+                        aiRule.level === "good"
+                          ? "text-emerald-300"
+                          : aiRule.level === "fair"
+                          ? "text-yellow-300"
+                          : "text-red-300"
+                      }`}
                     >
                       {aiRule.text}
                     </p>
 
-                    <div className="mt-2 text-xs space-y-1" style={{ color: 'var(--text-muted)' }}>
-                      <div>จำนวนผลลัพธ์: <b style={{ color: 'var(--text-main)' }}>{filtered.length}</b></div>
-                      <div>ราคาเฉลี่ย: <b style={{ color: 'var(--text-main)' }}>{thb(avgPrice)}</b></div>
-                      <div>ราคากลาง: <b style={{ color: 'var(--text-main)' }}>{thb(midPrice)}</b></div>
+                    <div className="mt-2 text-xs text-white/70 space-y-1">
+                      <div>จำนวนผลลัพธ์: <b className="text-white">{filtered.length}</b></div>
+                      <div>ราคาเฉลี่ย: <b className="text-white">{thb(avgPrice)}</b></div>
+                      <div>ราคากลาง: <b className="text-white">{thb(midPrice)}</b></div>
                       <div>
                         แนะนำตั้งราคาใกล้:{" "}
-                        <b style={{ color: 'var(--text-accent)' }}>{thb(aiRule.suggest)}</b>
+                        <b className="text-yellow-300">{thb(aiRule.suggest)}</b>
                       </div>
-                      <div style={{ opacity: 0.7 }}>
+                      <div className="text-white/50">
                         สัญญาณราคา: {aiRule.diffPct < 0 ? `ถูกกว่า ~${Math.abs(aiRule.diffPct)}%` : `แพงกว่า ~${aiRule.diffPct}%`}
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="h2h-card p-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                  <div className="h2h-card p-4">
+                    <p className="text-sm text-white/70">
                       ยังไม่พอข้อมูลสำหรับวิเคราะห์ (ลองค้นหาคำอื่น หรือให้มีผลลัพธ์มากขึ้น)
                     </p>
                   </div>
                 )}
 
                 {/* LLM */}
-                <div className="h2h-card p-4" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+                <div className="h2h-card p-4">
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div>
-                      <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--text-main)' }}>
+                      <h3 className="text-sm font-semibold text-white mb-1">
                         🧠 AI แนะนำราคา (LLM – ผ่าน Backend)
                       </h3>
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                      <p className="text-xs text-white/60">
                         ใช้ LLM วิเคราะห์จากสถิติ + ตัวอย่างผลลัพธ์ (ไม่ส่งข้อมูลส่วนตัว)
                       </p>
                     </div>
@@ -371,29 +367,29 @@ export default function Search() {
 
                   {aiLLM && (
                     <div className="mt-3 space-y-2 text-sm">
-                      <div style={{ color: 'var(--text-main)' }}>
-                        <b style={{ color: 'var(--text-accent)' }}>ข้อสรุป:</b> {aiLLM.summary}
+                      <div className="text-white">
+                        <b className="text-yellow-300">ข้อสรุป:</b> {aiLLM.summary}
                       </div>
-                      <div style={{ color: 'var(--text-muted)' }}>
-                        <b style={{ color: 'var(--text-accent)' }}>ราคาแนะนำ:</b>{" "}
+                      <div className="text-white/80">
+                        <b className="text-yellow-300">ราคาแนะนำ:</b>{" "}
                         {aiLLM.suggestedPrice ? thb(aiLLM.suggestedPrice) : "—"}
                       </div>
                       {Array.isArray(aiLLM.bullets) && aiLLM.bullets.length > 0 && (
-                        <ul className="list-disc pl-5 space-y-1" style={{ color: 'var(--text-muted)' }}>
+                        <ul className="list-disc pl-5 text-white/80 space-y-1">
                           {aiLLM.bullets.map((b, i) => (
                             <li key={i}>{b}</li>
                           ))}
                         </ul>
                       )}
                       {aiLLM.risks && (
-                        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                          <b style={{ color: 'var(--text-accent)' }}>ข้อควรระวัง:</b> {aiLLM.risks}
+                        <div className="text-white/70 text-xs">
+                          <b className="text-yellow-300">ข้อควรระวัง:</b> {aiLLM.risks}
                         </div>
                       )}
                     </div>
                   )}
 
-                  <div className="mt-3 text-xs" style={{ color: 'var(--text-muted)', opacity: 0.7 }}>
+                  <div className="mt-3 text-xs text-white/50">
                     หมายเหตุ: ถ้ายังไม่ได้ตั้งค่า API key / route backend จะขึ้น error — ดูไฟล์ backend ด้านล่าง
                   </div>
                 </div>

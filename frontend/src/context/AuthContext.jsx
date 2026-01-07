@@ -8,6 +8,7 @@ import React, {
 
 // ใช้ api wrapper เดิมของโปรเจกต์
 import { api } from "../lib/api";
+import { Capacitor } from "@capacitor/core";
 
 const AuthContext = createContext(null);
 
@@ -85,18 +86,6 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // ✅ RBAC Helpers
-  const isAdmin = user?.role === "admin";
-
-  function hasRole(roleName) {
-    return user?.role === roleName;
-  }
-
-  function hasPermission(permissionName) {
-    if (isAdmin) return true; // Admin gets everything
-    return user?.permissions?.includes(permissionName);
-  }
-
   // 🔐 Login
   async function login({ email, password }) {
     const res = await api("/auth/login", {
@@ -159,6 +148,35 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // 🌐 Google Login (Capacitor Plugin)
+  async function loginWithGoogle() {
+    try {
+      const { GoogleAuth } = await import("@codetrix-studio/capacitor-google-auth");
+
+      // Initialize
+      await GoogleAuth.initialize({
+        clientId: '89405308285-s2lpns7q0raffr2o3p0vetbqjckfit7c.apps.googleusercontent.com',
+        scopes: ['profile', 'email'],
+      });
+
+      // Sign in
+      const user = await GoogleAuth.signIn();
+      const idToken = user.authentication.idToken;
+
+      // Send to backend
+      const res = await api("/auth/social/google", {
+        method: "POST",
+        body: JSON.stringify({ idToken }),
+      });
+
+      applyAuthFromResponse(res);
+      return res;
+    } catch (error) {
+      console.error("Google Login Error:", error);
+      throw error;
+    }
+  }
+
   function logout() {
     setUser(null);
     setToken(null);
@@ -177,11 +195,9 @@ export function AuthProvider({ children }) {
         loading,
         login,
         register,
+        loginWithGoogle,
         logout,
         refreshProfile: fetchProfile,
-        isAdmin,
-        hasRole,
-        hasPermission,
       }}
     >
       {children}

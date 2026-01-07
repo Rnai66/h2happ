@@ -1,0 +1,16 @@
+import type { CapacitorConfig } from '@capacitor/cli';
+
+const config: CapacitorConfig = {
+  appId: 'com.h2h.surin',
+  appName: 'H2H Surin',
+  webDir: 'dist',
+  plugins: {
+    GoogleAuth: {
+      scopes: ['profile', 'email'],
+      serverClientId: '89405308285-s2lpns7q0raffr2o3p0vetbqjckfit7c.apps.googleusercontent.com',
+      forceCodeForRefreshToken: true,
+    },
+  },
+};
+
+export default config;

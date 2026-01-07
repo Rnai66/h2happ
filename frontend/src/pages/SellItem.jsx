@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import Card from "../components/ui/Card";
@@ -21,12 +21,11 @@ function maxImagesByRole(role) {
   if (r === "admin") return 20;
   if (r === "seller_pro" || r === "pro") return 12;
   // seller / user ปกติ
-  return 10;
+  return 6;
 }
 
 export default function SellItem() {
   const nav = useNavigate();
-  const inputRef = useRef(null);
 
   const role = getRole();
   const MAX = maxImagesByRole(role);
@@ -100,7 +99,7 @@ export default function SellItem() {
         try {
           URL.revokeObjectURL(p.url);
           URL.revokeObjectURL(p.thumb);
-        } catch { }
+        } catch {}
       });
     };
   }, [previews, uploaded.length]);
@@ -198,11 +197,6 @@ export default function SellItem() {
 
     if (!form.title.trim()) return setError("กรุณากรอกชื่อสินค้า");
     if (!form.price || Number(form.price) <= 0) return setError("กรุณากรอกราคาให้ถูกต้อง");
-    // ✅ บังคับรูปขั้นต่ำ 1 รูป (เช็คจาก uploaded หรือ files ที่รอ upload)
-    const totalImages = uploaded.length + files.length + parseManualUrls(form.imageUrls).length;
-    if (totalImages < 1) {
-      return setError("กรุณาอัปโหลดรูปภาพสินค้าอย่างน้อย 1 รูป");
-    }
 
     setLoading(true);
     try {
@@ -251,12 +245,12 @@ export default function SellItem() {
           <div className="p-4 md:p-6 space-y-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                {/* ✅ ใช้ theme var แทน fixed white */}
-                <h1 className="text-xl font-semibold" style={{ color: 'var(--text-main)' }}>ลงขายสินค้ามือสอง</h1>
-                {/* ✅ ใช้ theme var แทน fixed white */}
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+                {/* ✅ เปลี่ยน text-slate-900 → text-white */}
+                <h1 className="text-xl font-semibold text-white">ลงขายสินค้ามือสอง</h1>
+                {/* ✅ เปลี่ยน text-slate-500 → text-white/70 */}
+                <p className="text-sm text-white/70">
                   บันทึกเป็น “ร่าง (Draft)” ก่อนเผยแพร่ • แพ็กเกจของคุณ:{" "}
-                  <b style={{ color: 'var(--text-main)' }}>{role}</b> (สูงสุด {MAX} รูป)
+                  <b className="text-white">{role}</b> (สูงสุด {MAX} รูป)
                 </p>
               </div>
 
@@ -264,12 +258,8 @@ export default function SellItem() {
                 type="button"
                 disabled={loading}
                 onClick={handleCancelDraft}
-                className="px-3 py-2 rounded-lg border text-sm transition hover:opacity-80 disabled:opacity-60"
-                style={{
-                  borderColor: 'var(--border-color)',
-                  color: 'var(--text-main)',
-                  background: 'var(--bg-frame)' // Use frame background for contrast
-                }}
+                className="px-3 py-2 rounded-lg border border-white/20 text-sm text-white/85
+                           hover:bg-white/10 disabled:opacity-60"
                 title="ยกเลิกและลบรูปที่อัปโหลด"
               >
                 ยกเลิก/ลบรูป
@@ -277,70 +267,42 @@ export default function SellItem() {
             </div>
 
             {/* Mobile Preview */}
-            {/* Mobile Preview: ใช้ Theme Colors */}
-            <div className="rounded-2xl p-4 shadow-silk border transition"
-              style={{ background: 'var(--bg-frame)', borderColor: 'var(--border-color)' }}>
-              <div className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>ตัวอย่างบนมือถือ</div>
+            {/* ✅ เปลี่ยน bg-white → bg-black/40 + border ขาวโปร่ง */}
+            <div className="bg-black/40 border border-white/15 rounded-2xl p-4 shadow-silk">
+              <div className="text-xs text-white/60 mb-2">ตัวอย่างบนมือถือ</div>
 
-              {/* 2x2 Grid Display (4 images) */}
-              {/* Main Cover + Grid Layout - Clickable to Upload */}
-              <div
-                className="space-y-2 cursor-pointer active:opacity-90 transition"
-                onClick={() => inputRef.current?.click()}
-                title="คลิกเพื่ออัปโหลดรูป"
-              >
-                {/* 1. Main Cover Image (Always visible as large box) */}
-                <div
-                  className="rounded-xl overflow-hidden border flex items-center justify-center relative aspect-video w-full bg-black/5"
-                  style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
-                >
-                  {previews[0]?.url ? (
-                    <img src={previews[0].url} alt="cover" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="flex flex-col items-center gap-2 opacity-40" style={{ color: 'var(--text-muted)' }}>
-                      <span className="text-2xl">📷</span>
-                      <span className="text-xs">คลิกเพิ่มรูปหน้าปก</span>
-                    </div>
-                  )}
-                  {previews[0]?.url && (
-                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold bg-black/50 text-white backdrop-blur-sm">
-                      รูปปก (Cover)
-                    </div>
-                  )}
-                </div>
+              {/* ✅ เปลี่ยน bg-slate-100 → bg-black/40 */}
+              <div className="rounded-xl bg-black/40 border border-white/10 overflow-hidden aspect-square flex items-center justify-center">
+                {previews[0]?.url ? (
+                  <img src={previews[0].url} alt="preview" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="text-white/55 text-sm">No image</div>
+                )}
+              </div>
 
-                {/* 2. Sub Grid for Image 2,3,4... */}
-                <div className="grid grid-cols-4 gap-2">
-                  {/* Create 4 slots for 2nd-5th images */}
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className="aspect-square rounded-lg overflow-hidden border flex items-center justify-center relative bg-black/5"
-                      style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}
-                    >
-                      {previews[i]?.url ? (
-                        <img src={previews[i].url} alt={`img-${i}`} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-[10px] opacity-30" style={{ color: 'var(--text-muted)' }}>{i + 1}</span>
-                      )}
+              {previews.length > 1 && (
+                <div className="mt-2 grid grid-cols-5 gap-2">
+                  {previews.slice(0, 5).map((p) => (
+                    <div key={p.thumb} className="aspect-square rounded-lg overflow-hidden bg-black/40 border border-white/10">
+                      <img src={p.thumb} alt={p.name} className="w-full h-full object-cover" />
                     </div>
                   ))}
                 </div>
-              </div>
+              )}
 
               <div className="mt-3">
-                <div className="font-semibold line-clamp-2" style={{ color: 'var(--text-main)' }}>
+                <div className="font-semibold line-clamp-2 text-white">
                   {form.title || "ชื่อสินค้า"}
                 </div>
-                {/* ราคาให้เด่น */}
-                <div className="text-sm mt-1 font-bold" style={{ color: 'var(--text-accent)' }}>฿ {form.price || "0"}</div>
-                <div className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--text-muted)' }}>
+                {/* ✅ ราคาให้เด่น */}
+                <div className="text-sm text-yellow-300 mt-1">฿ {form.price || "0"}</div>
+                <div className="text-xs text-white/70 mt-1 line-clamp-2">
                   {form.description || "รายละเอียดสินค้า"}
                 </div>
               </div>
 
               {uploaded.length > 0 && (
-                <div className="text-xs text-emerald-600 mt-2 font-medium">
+                <div className="text-xs text-emerald-300 mt-2">
                   Uploaded: {uploaded.length} รูป (Cloudinary)
                 </div>
               )}
@@ -360,8 +322,8 @@ export default function SellItem() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-1">
-                {/* ✅ label สีตามธีม */}
-                <label className="text-sm font-medium" style={{ color: 'var(--text-main)' }}>ชื่อสินค้า</label>
+                {/* ✅ label สีขาว */}
+                <label className="text-sm font-medium text-white">ชื่อสินค้า</label>
                 <input
                   name="title"
                   type="text"
@@ -373,7 +335,7 @@ export default function SellItem() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium" style={{ color: 'var(--text-main)' }}>ราคา (บาท)</label>
+                <label className="text-sm font-medium text-white">ราคา (บาท)</label>
                 <input
                   name="price"
                   type="number"
@@ -386,7 +348,7 @@ export default function SellItem() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium" style={{ color: 'var(--text-main)' }}>สถานที่นัดรับ / จัดส่ง</label>
+                <label className="text-sm font-medium text-white">สถานที่นัดรับ / จัดส่ง</label>
                 <input
                   name="location"
                   type="text"
@@ -398,7 +360,7 @@ export default function SellItem() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-sm font-medium" style={{ color: 'var(--text-main)' }}>รายละเอียดสินค้า</label>
+                <label className="text-sm font-medium text-white">รายละเอียดสินค้า</label>
                 <textarea
                   name="description"
                   rows={4}
@@ -411,37 +373,31 @@ export default function SellItem() {
 
               {/* Upload */}
               <div className="space-y-1">
-                <label className="text-sm font-medium" style={{ color: 'var(--text-main)' }}>อัปโหลดรูป (สูงสุด {MAX} รูป)</label>
+                <label className="text-sm font-medium text-white">อัปโหลดรูป (สูงสุด {MAX} รูป)</label>
 
                 {/* ✅ file input อ่านง่าย */}
-                {/* ✅ file input อ่านง่าย ตามธีม */}
-                {/* ✅ file input (Hidden, triggered by ref) */}
                 <input
                   type="file"
-                  ref={inputRef}
-                  accept="image/*"
+                  accept="image/png,image/jpeg,image/webp"
                   multiple
                   onChange={onPickFiles}
-                  className="hidden"
+                  className="w-full text-sm text-white/85
+                             file:mr-3 file:rounded-lg file:border-0
+                             file:bg-white/10 file:text-white file:px-3 file:py-2
+                             hover:file:bg-white/15"
                 />
-                <div className="flex gap-3 pt-2 items-center">
-                  <button
-                    type="button"
-                    disabled={loading}
-                    onClick={() => inputRef.current?.click()}
-                    className="px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 transition"
-                  >
-                    เลือกรูปภาพ...
-                  </button>
+
+                <div className="flex gap-2 pt-2 items-center">
                   <button
                     type="button"
                     disabled={loading}
                     onClick={handleUploadOnly}
-                    className="px-4 py-2 rounded-lg shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 transition"
+                    className="px-3 py-2 rounded-lg border border-white/20 text-sm text-white/85
+                               hover:bg-white/10 disabled:opacity-60"
                   >
                     {loading ? "..." : "อัปโหลดรูป"}
                   </button>
-                  <div className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                  <div className="text-xs text-white/60">
                     (หรือกด “บันทึกร่างสินค้า” ได้เลย ระบบจะอัปโหลดให้)
                   </div>
                 </div>
@@ -449,7 +405,7 @@ export default function SellItem() {
 
               {/* manual URLs */}
               <div className="space-y-1">
-                <label className="text-sm font-medium" style={{ color: 'var(--text-main)' }}>
+                <label className="text-sm font-medium text-white">
                   ลิงก์รูปภาพ (คั่นด้วย ,) — optional
                 </label>
                 <textarea
@@ -465,8 +421,7 @@ export default function SellItem() {
               <div className="pt-2 flex items-center justify-between gap-3">
                 <button
                   type="button"
-                  className="text-sm hover:underline"
-                  style={{ color: 'var(--text-muted)' }}
+                  className="text-sm text-white/65 hover:text-white"
                   onClick={() => nav(-1)}
                 >
                   ← กลับ
@@ -484,10 +439,10 @@ export default function SellItem() {
                 </button>
               </div>
 
-              {/* ✅ เปลี่ยน text-white/60 → theme var */}
-              <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                หลังบันทึกร่างแล้ว ไปหน้า <b style={{ color: 'var(--text-main)' }}>My Listings</b> แล้วกด{" "}
-                <b style={{ color: 'var(--text-main)' }}>Publish</b>
+              {/* ✅ เปลี่ยน text-slate-500 → text-white/60 */}
+              <p className="text-xs text-white/60">
+                หลังบันทึกร่างแล้ว ไปหน้า <b className="text-white">My Listings</b> แล้วกด{" "}
+                <b className="text-white">Publish</b>
               </p>
             </form>
           </div>

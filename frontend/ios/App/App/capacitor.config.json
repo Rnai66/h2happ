@@ -1,6 +1,19 @@
 {
-	"appId": "com.h2h.app",
-	"appName": "H2H App",
+	"appId": "com.h2h.surin",
+	"appName": "H2H Surin",
 	"webDir": "dist",
-	"packageClassList": []
+	"plugins": {
+		"GoogleAuth": {
+			"scopes": [
+				"profile",
+				"email"
+			],
+			"serverClientId": "89405308285-s2lpns7q0raffr2o3p0vetbqjckfit7c.apps.googleusercontent.com",
+			"forceCodeForRefreshToken": true
+		}
+	},
+	"packageClassList": [
+		"CAPBrowserPlugin",
+		"GoogleAuth"
+	]
 }

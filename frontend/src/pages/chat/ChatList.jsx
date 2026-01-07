@@ -3,24 +3,20 @@ import { useEffect, useState } from "react";
 import MainLayout from "../../layouts/MainLayout";
 import Card from "../../components/ui/Card";
 import { api } from "../../lib/api";
-import { useAuth } from "../../context/AuthContext";
+import { getUser } from "../../lib/auth";
 
 export default function ChatList() {
   const nav = useNavigate();
-  const { user, loading: authLoading } = useAuth();
   const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
 
   useEffect(() => {
-    if (authLoading) return; // Wait for auth check to finish
-    if (!user) {
+    const u = getUser();
+    if (!u) {
       nav(`/auth?tab=login&redirectTo=${encodeURIComponent("/chat")}`);
+      return;
     }
-  }, [user, authLoading, nav]);
-
-  useEffect(() => {
-    if (!user) return; // Wait for user
 
     (async () => {
       try {
@@ -30,8 +26,8 @@ export default function ChatList() {
         const list = Array.isArray(data)
           ? data
           : Array.isArray(data.threads)
-            ? data.threads
-            : [];
+          ? data.threads
+          : [];
         setThreads(list);
       } catch (e) {
         setErr(e.message || "โหลดรายการแชตไม่สำเร็จ");
@@ -48,8 +44,8 @@ export default function ChatList() {
 
         {/* ===== Title ===== */}
         <div className="h2h-titlebar">
-          <h1 className="h2h-title" style={{ color: 'var(--text-main)' }}>แชตของ {user?.name || "ฉัน"}</h1>
-          <p className="h2h-subtitle" style={{ color: 'var(--text-muted)' }}>รายการสนทนาล่าสุด</p>
+          <h1 className="h2h-title">แชตของฉัน</h1>
+          <p className="h2h-subtitle">รายการสนทนาล่าสุด</p>
         </div>
 
         {loading && (
@@ -72,9 +68,9 @@ export default function ChatList() {
               const last = t.lastMessage?.text || "ยังไม่มีข้อความ";
               const ts = t.lastMessage?.createdAt
                 ? new Date(t.lastMessage.createdAt).toLocaleTimeString("th-TH", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
                 : "";
 
               const partnerName = t.partner?.name || "คู่สนทนา";
@@ -82,43 +78,34 @@ export default function ChatList() {
 
               return (
                 <Link key={t._id} to={`/chat/${t._id}`} className="block">
-                  <Card className="h2h-card transition active:scale-[0.99]"
-                    style={{
-                      backgroundColor: 'var(--bg-card)',
-                      borderColor: 'var(--border-color)',
-                      color: 'var(--text-main)'
-                    }}
-                  >
+                  <Card className="h2h-card">
                     <div className="p-4 flex items-center gap-3">
 
                       {/* Avatar */}
                       <div
-                        className="w-12 h-12 rounded-full border
-                                   grid place-content-center text-lg shadow-sm"
-                        style={{
-                          backgroundColor: 'var(--bg-frame)',
-                          borderColor: 'var(--border-color)',
-                          color: 'var(--text-accent)'
-                        }}
+                        className="w-12 h-12 rounded-full
+                                   bg-white/10 border border-white/15
+                                   grid place-content-center
+                                   text-white text-lg"
                       >
                         💬
                       </div>
 
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between gap-3">
-                          <p className="font-semibold truncate" style={{ color: 'var(--text-main)' }}>
+                          <p className="font-semibold truncate text-white">
                             {partnerName}
                           </p>
-                          <span className="text-xs shrink-0" style={{ color: 'var(--text-muted)' }}>
+                          <span className="text-xs text-white/70 shrink-0">
                             {ts}
                           </span>
                         </div>
 
-                        <p className="text-sm truncate" style={{ color: 'var(--text-main)' }}>
+                        <p className="text-sm text-white/85 truncate">
                           {last}
                         </p>
 
-                        <p className="text-xs truncate mt-1" style={{ color: 'var(--text-muted)' }}>
+                        <p className="text-xs text-white/60 truncate mt-1">
                           สินค้า: {item}
                         </p>
                       </div>

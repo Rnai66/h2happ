@@ -20,6 +20,19 @@ export function UserModel(conn) {
         lowercase: true,
         trim: true,
       },
+      googleId: {
+        type: String,
+        unique: true,
+        sparse: true,
+      },
+      appleId: {
+        type: String,
+        unique: true,
+        sparse: true,
+      },
+      avatar: {
+        type: String,
+      },
       passwordHash: {
         type: String, // Keep legacy field just in case
         required: false,

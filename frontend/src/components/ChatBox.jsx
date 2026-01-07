@@ -9,7 +9,6 @@ export default function ChatBox({
   buyerId,
   sellerId,
   itemId,
-  price,
   onCreateOrder,
 }) {
   const [messages, setMessages] = useState([]);
@@ -21,10 +20,6 @@ export default function ChatBox({
 
   const bottomRef = useRef(null);
   const nav = useNavigate();
-
-  // Calculate Offer Prices (5% and 10% off)
-  const price5 = price ? Math.floor(price * 0.95) : 0;
-  const price10 = price ? Math.floor(price * 0.90) : 0;
 
   /* scroll ลงล่างเมื่อมีข้อความ */
   useEffect(() => {
@@ -118,10 +113,10 @@ export default function ChatBox({
     <div className="h2h-chat space-y-3">
       {/* Header */}
       <div>
-        <h3 className="text-sm font-semibold" style={{ color: 'var(--text-main)' }}>
+        <h3 className="text-sm font-semibold text-white">
           แชตคุยกับผู้ขาย / ต่อรองราคา
         </h3>
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+        <p className="text-xs text-white/70">
           ใช้แชตนี้สอบถามรายละเอียดและตกลงราคาก่อนสั่งซื้อ
         </p>
       </div>
@@ -130,53 +125,40 @@ export default function ChatBox({
       <div className="flex flex-wrap gap-2 text-xs">
         {[
           "ลดได้อีกไหมครับ",
+          "รับที่ 10,000 ได้ไหม",
           "ขอรายละเอียดเพิ่ม",
         ].map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setInput((p) => (p ? p + " " + t : t))}
-            className="px-3 py-1 rounded-full border transition hover:opacity-80"
-            style={{
-              background: 'var(--bg-card)',
-              borderColor: 'var(--border-color)',
-              color: 'var(--text-main)'
-            }}
+            className="px-3 py-1 rounded-full bg-white/10 border border-white/20
+                       text-white hover:bg-white/15"
           >
             {t}
           </button>
         ))}
-
-        {/* Dynamic Offer Buttons */}
-        {price > 0 && (
-          <>
-            <button
-              type="button"
-              onClick={() => setInput(`[ข้อเสนอราคา] ขอลด 5% เหลือ ฿${price5.toLocaleString()}`)}
-              className="px-3 py-1 rounded-full bg-blue-600/60 text-white border border-blue-400/30 hover:bg-blue-600/80"
-            >
-              ลด 5% (฿{price5.toLocaleString()})
-            </button>
-            <button
-              type="button"
-              onClick={() => setInput(`[ข้อเสนอราคา] ขอลด 10% เหลือ ฿${price10.toLocaleString()}`)}
-              className="px-3 py-1 rounded-full bg-blue-600/90 text-white border border-blue-400/50 hover:bg-blue-600"
-            >
-              ลด 10% (฿{price10.toLocaleString()})
-            </button>
-          </>
-        )}
+        <button
+          type="button"
+          onClick={() =>
+            setInput("[ข้อเสนอราคา] ขอเสนอราคา ฿10,500")
+          }
+          className="px-3 py-1 rounded-full bg-blue-600/90 text-white"
+        >
+          เสนอราคา ฿10,500
+        </button>
       </div>
 
       {/* Chat box */}
-      <div className="h-64 rounded-2xl border flex flex-col overflow-hidden shadow-sm"
-        style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+      <div className="h-64 rounded-2xl border border-white/15
+                      bg-black/40 backdrop-blur
+                      flex flex-col overflow-hidden">
         <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2 text-xs">
           {loading && (
-            <p className="text-center mt-4" style={{ color: 'var(--text-muted)' }}>กำลังโหลดแชต...</p>
+            <p className="text-white/60">กำลังโหลดแชต...</p>
           )}
           {!loading && messages.length === 0 && (
-            <p className="text-center mt-4" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-white/60">
               ยังไม่มีข้อความ เริ่มทักได้เลย 🙂
             </p>
           )}
@@ -201,9 +183,9 @@ export default function ChatBox({
                   <div className="chat-meta text-right">
                     {m.createdAt
                       ? new Date(m.createdAt).toLocaleTimeString("th-TH", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
                       : ""}
                   </div>
                 </div>
@@ -216,17 +198,13 @@ export default function ChatBox({
         {/* Composer */}
         <form
           onSubmit={handleSend}
-          className="border-t px-3 py-3 flex items-center gap-2"
-          style={{ background: 'var(--bg-frame)', borderColor: 'var(--border-color)' }}
+          className="border-t border-white/15
+                     bg-black/60 px-2 py-1
+                     flex items-center gap-2"
         >
           <input
             type="text"
-            className="flex-1 rounded-full text-sm px-4 py-2 border-2 outline-none transition shadow-inner"
-            style={{
-              background: 'var(--bg-main)',
-              borderColor: 'var(--border-color)',
-              color: 'var(--text-main)'
-            }}
+            className="flex-1 h2h-input rounded-full text-sm"
             placeholder="พิมพ์ข้อความ..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -235,11 +213,7 @@ export default function ChatBox({
           <button
             type="submit"
             disabled={chatDisabled || !input.trim()}
-            className="px-5 py-2 rounded-full text-sm font-semibold shadow-md active:scale-95 transition"
-            style={{
-              background: 'var(--accent-primary)',
-              color: '#fff'
-            }}
+            className="h2h-btn px-4 py-2 rounded-full text-sm"
           >
             ส่ง
           </button>
@@ -257,6 +231,6 @@ export default function ChatBox({
       </button>
 
       {error && <p className="text-xs text-red-300">{error}</p>}
-    </div >
+    </div>
   );
 }

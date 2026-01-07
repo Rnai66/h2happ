@@ -23,6 +23,7 @@ import paypalRoutes from "./routes/paypal.js";
 import paypalWebhookRoutes from "./routes/paypalWebhook.js";
 import uploadRoutes from "./routes/upload.js";
 import aiRoutes from "./routes/ai.js";
+import socialAuthRoutes from "./routes/socialAuth.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,6 +60,7 @@ app.use("/api/pay/paypal", paypalRoutes);
 // Health / Auth / Chat
 app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/auth/social", socialAuthRoutes);
 app.use("/api/users", usersRoutes); // Added users routes
 app.use("/api/chat", chatRoutes);
 

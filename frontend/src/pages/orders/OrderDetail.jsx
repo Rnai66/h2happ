@@ -106,12 +106,12 @@ export default function OrderDetail() {
         {/* ===== Header ===== */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--text-main)' }}>
+            <h1 className="text-2xl font-bold text-white">
               รายละเอียดคำสั่งซื้อ
             </h1>
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-sm text-white/70">
               เลขคำสั่งซื้อ:
-              <span className="font-mono ml-1 font-bold" style={{ color: 'var(--text-main)' }}>
+              <span className="font-mono ml-1 text-white">
                 {order?.orderNumber || order?._id}
               </span>
             </p>
@@ -119,15 +119,7 @@ export default function OrderDetail() {
 
           <div className="flex gap-2 no-print">
             <Button onClick={() => handlePrint("a4")}>🖨 พิมพ์ A4</Button>
-            <Button
-              onClick={() => handlePrint("80")}
-              className="border transition hover:brightness-110"
-              style={{
-                background: 'var(--bg-frame)',
-                color: 'var(--text-main)',
-                borderColor: 'var(--border-color)'
-              }}
-            >
+            <Button variant="ghost" onClick={() => handlePrint("80")}>
               🧾 พิมพ์ 80mm
             </Button>
           </div>
@@ -140,52 +132,47 @@ export default function OrderDetail() {
           <>
             {/* ===== Summary ===== */}
             <div className="grid md:grid-cols-[1.6fr,1.2fr] gap-4">
-              <Card className="h2h-card" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+              <Card className="h2h-card">
                 <div className="p-4 flex gap-3">
                   <img
                     src={itemImage}
                     alt={itemTitle}
-                    className="w-28 h-28 rounded-xl object-cover border"
-                    style={{ borderColor: 'var(--border-color)' }}
+                    className="w-28 h-28 rounded-xl object-cover border border-white/15"
                   />
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <H2HLogo />
-                      <span className="text-xs uppercase" style={{ color: 'var(--text-muted)' }}>
+                      <span className="text-xs uppercase text-white/60">
                         H2H Thailand
                       </span>
                     </div>
-                    <h2 className="font-semibold truncate" style={{ color: 'var(--text-main)' }}>
+                    <h2 className="font-semibold text-white truncate">
                       {itemTitle}
                     </h2>
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                      ผู้ซื้อ: <b style={{ color: 'var(--text-main)' }}>{order.buyerId}</b>
+                    <p className="text-sm text-white/70">
+                      ผู้ซื้อ: <b className="text-white">{order.buyerId}</b>
                     </p>
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                      ผู้ขาย: <b style={{ color: 'var(--text-main)' }}>{order.sellerId}</b>
+                    <p className="text-sm text-white/70">
+                      ผู้ขาย: <b className="text-white">{order.sellerId}</b>
                     </p>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <p className="text-xs text-white/50">
                       สร้างเมื่อ: {fmtDate(order.createdAt)}
                     </p>
                   </div>
                 </div>
               </Card>
 
-              <Card className="h2h-card" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+              <Card className="h2h-card">
                 <div className="p-4 space-y-2">
-                  <div className="flex justify-between text-sm" style={{ color: 'var(--text-muted)' }}>
+                  <div className="flex justify-between text-sm text-white/80">
                     <span>สถานะ</span>
-                    <span className="px-2 py-0.5 rounded-full border text-xs" style={{
-                      background: 'var(--bg-frame)',
-                      borderColor: 'var(--border-color)',
-                      color: 'var(--text-main)'
-                    }}>
+                    <span className="px-2 py-0.5 rounded-full bg-black/40 border border-white/20 text-xs">
                       {order.status} / {order.paymentStatus}
                     </span>
                   </div>
                   <div className="flex justify-between font-semibold">
-                    <span style={{ color: 'var(--text-main)' }}>ยอดชำระ</span>
-                    <span className="text-lg" style={{ color: 'var(--accent-primary)' }}>
+                    <span className="text-white">ยอดชำระ</span>
+                    <span className="text-lg text-yellow-300">
                       ฿{Number(amount).toLocaleString("th-TH")}
                     </span>
                   </div>
@@ -194,9 +181,9 @@ export default function OrderDetail() {
             </div>
 
             {/* ===== Payment ===== */}
-            <Card className="h2h-card no-print" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
+            <Card className="h2h-card no-print">
               <div className="p-4 space-y-4">
-                <h2 className="text-sm font-semibold" style={{ color: 'var(--text-main)' }}>
+                <h2 className="text-sm font-semibold text-white">
                   วิธีการชำระเงิน
                 </h2>
 
@@ -212,9 +199,10 @@ export default function OrderDetail() {
                       type="button"
                       onClick={() => setPayMethod(id)}
                       className={`px-3 py-1.5 rounded-full text-xs border
-                        ${payMethod === id
-                          ? "bg-blue-600 text-white border-blue-600"
-                          : "bg-black/30 text-white/70 border-white/20"
+                        ${
+                          payMethod === id
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "bg-black/30 text-white/70 border-white/20"
                         }`}
                     >
                       {label}
