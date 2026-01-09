@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
 const ChatThreadSchema = new mongoose.Schema({
-  itemId:   { type: mongoose.Schema.Types.ObjectId, required: true },
-  buyerId:  { type: mongoose.Schema.Types.ObjectId, required: true },
-  sellerId: { type: mongoose.Schema.Types.ObjectId, required: true },
+  itemId: { type: mongoose.Schema.Types.ObjectId, required: true },
+  buyerId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
+  sellerId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: "User" },
   lastMessageAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 

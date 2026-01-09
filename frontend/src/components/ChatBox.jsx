@@ -9,6 +9,7 @@ export default function ChatBox({
   buyerId,
   sellerId,
   itemId,
+  price,
   onCreateOrder,
 }) {
   const [messages, setMessages] = useState([]);
@@ -21,12 +22,14 @@ export default function ChatBox({
   const bottomRef = useRef(null);
   const nav = useNavigate();
 
-  /* scroll ลงล่างเมื่อมีข้อความ */
+  const itemPrice = Number(price) || 0;
+  const price5 = Math.floor(itemPrice * 0.95);
+  const price10 = Math.floor(itemPrice * 0.90);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages.length]);
 
-  /* โหลด messages */
   useEffect(() => {
     if (!token || !threadId) return;
     let cancelled = false;
@@ -39,37 +42,27 @@ export default function ChatBox({
         const msgs = Array.isArray(data) ? data : data.messages || [];
         if (!cancelled) setMessages(msgs);
       } catch (err) {
-        if (!cancelled)
-          setError(err.message || "เกิดข้อผิดพลาดในการโหลดแชต");
+        if (!cancelled) setError(err.message || "เกิดข้อผิดพลาดในการโหลดแชต");
       } finally {
         if (!cancelled) setLoading(false);
       }
     })();
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [token, threadId]);
 
-  const chatDisabled =
-    !token || !buyerId || !sellerId || !itemId || loading || sending;
-
-  const orderDisabled =
-    !token || !buyerId || !sellerId || !itemId || creatingOrder;
+  const chatDisabled = !token || !buyerId || !sellerId || !itemId || loading || sending;
+  const orderDisabled = !token || !buyerId || !sellerId || !itemId || creatingOrder;
 
   async function ensureThread() {
     if (threadId) return threadId;
-    const thread = await api.post("/chat/threads", {
-      buyerId,
-      sellerId,
-      itemId,
-    });
+    const thread = await api.post("/chat/threads", { buyerId, sellerId, itemId });
     onThreadCreated?.(thread);
     return thread._id;
   }
 
   async function handleSend(e) {
-    e.preventDefault();
+    if (e?.preventDefault) e.preventDefault();
     if (!input.trim() || chatDisabled) return;
 
     try {
@@ -94,12 +87,7 @@ export default function ChatBox({
     try {
       setCreatingOrder(true);
       setError("");
-      const res = await api.post("/orders", {
-        itemId,
-        buyerId,
-        sellerId,
-        source: "chat",
-      });
+      const res = await api.post("/orders", { itemId, buyerId, sellerId, source: "chat" });
       const order = res.order || res.data?.order || res;
       nav(`/orders/${order._id}?from=chat`);
     } catch (err) {
@@ -109,128 +97,131 @@ export default function ChatBox({
     }
   }
 
-  return (
-    <div className="h2h-chat space-y-3">
-      {/* Header */}
-      <div>
-        <h3 className="text-sm font-semibold text-white">
-          แชตคุยกับผู้ขาย / ต่อรองราคา
-        </h3>
-        <p className="text-xs text-white/70">
-          ใช้แชตนี้สอบถามรายละเอียดและตกลงราคาก่อนสั่งซื้อ
-        </p>
-      </div>
+  function sendOffer(percent, amount) {
+    setInput(`[ข้อเสนอราคา] ขอลด ${percent}% เหลือ ฿${amount.toLocaleString()}`);
+  }
 
-      {/* Quick actions */}
-      <div className="flex flex-wrap gap-2 text-xs">
-        {[
-          "ลดได้อีกไหมครับ",
-          "รับที่ 10,000 ได้ไหม",
-          "ขอรายละเอียดเพิ่ม",
-        ].map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setInput((p) => (p ? p + " " + t : t))}
-            className="px-3 py-1 rounded-full bg-white/10 border border-white/20
-                       text-white hover:bg-white/15"
-          >
-            {t}
-          </button>
-        ))}
+  return (
+    <div className="flex flex-col h-full bg-white rounded-xl overflow-hidden shadow-lg border border-slate-200">
+      {/* Quick Actions Bar */}
+      <div className="px-4 py-3 bg-emerald-50 border-b border-emerald-100 flex flex-wrap gap-2">
+        {itemPrice > 0 && (
+          <>
+            <button
+              type="button"
+              onClick={() => sendOffer(5, price5)}
+              className="px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition-all"
+            >
+              💰 ลด 5%
+            </button>
+            <button
+              type="button"
+              onClick={() => sendOffer(10, price10)}
+              className="px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm transition-all"
+            >
+              💰 ลด 10%
+            </button>
+          </>
+        )}
         <button
           type="button"
-          onClick={() =>
-            setInput("[ข้อเสนอราคา] ขอเสนอราคา ฿10,500")
-          }
-          className="px-3 py-1 rounded-full bg-blue-600/90 text-white"
+          onClick={() => setInput("ขอรายละเอียดเพิ่มครับ")}
+          className="px-3 py-1.5 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 shadow-sm transition-all"
         >
-          เสนอราคา ฿10,500
+          📝 ขอข้อมูลเพิ่ม
+        </button>
+        <button
+          type="button"
+          onClick={() => setInput("ขอรูปเพิ่มเติมครับ")}
+          className="px-3 py-1.5 rounded-full text-xs font-medium bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 shadow-sm transition-all"
+        >
+          📷 ขอรูปเพิ่ม
         </button>
       </div>
 
-      {/* Chat box */}
-      <div className="h-64 rounded-2xl border border-white/15
-                      bg-black/40 backdrop-blur
-                      flex flex-col overflow-hidden">
-        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2 text-xs">
-          {loading && (
-            <p className="text-white/60">กำลังโหลดแชต...</p>
-          )}
-          {!loading && messages.length === 0 && (
-            <p className="text-white/60">
-              ยังไม่มีข้อความ เริ่มทักได้เลย 🙂
-            </p>
-          )}
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 min-h-[300px]">
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
 
-          {messages.map((m) => {
-            const isBuyer = m.senderId === buyerId;
-            return (
+        {!loading && messages.length === 0 && (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-4 bg-emerald-100 rounded-full flex items-center justify-center">
+              <span className="text-2xl">💬</span>
+            </div>
+            <p className="text-gray-500 text-sm">เริ่มสนทนาได้เลย!</p>
+          </div>
+        )}
+
+        {messages.map((m) => {
+          const isMe = m.senderId === buyerId;
+          return (
+            <div key={m._id || m.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
               <div
-                key={m._id || m.id}
-                className={`flex ${isBuyer ? "justify-end" : "justify-start"}`}
+                className={`max-w-[75%] px-4 py-3 rounded-2xl ${isMe
+                  ? "bg-emerald-500 text-white rounded-br-sm shadow-md"
+                  : "bg-white text-slate-800 border border-slate-200 rounded-bl-sm shadow-sm"
+                  }`}
               >
-                <div
-                  className={
-                    isBuyer
-                      ? "chat-bubble-me rounded-br-sm"
-                      : "chat-bubble-other rounded-bl-sm"
-                  }
-                >
-                  <p className="whitespace-pre-line break-words">
-                    {m.text}
+                <p className="text-sm leading-relaxed whitespace-pre-line break-words">
+                  {m.text}
+                </p>
+                {m.createdAt && (
+                  <p className={`text-[10px] mt-1.5 ${isMe ? "text-emerald-100" : "text-slate-400"}`}>
+                    {new Date(m.createdAt).toLocaleTimeString("th-TH", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </p>
-                  <div className="chat-meta text-right">
-                    {m.createdAt
-                      ? new Date(m.createdAt).toLocaleTimeString("th-TH", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : ""}
-                  </div>
-                </div>
+                )}
               </div>
-            );
-          })}
-          <div ref={bottomRef} />
-        </div>
+            </div>
+          );
+        })}
+        <div ref={bottomRef} />
+      </div>
 
-        {/* Composer */}
-        <form
-          onSubmit={handleSend}
-          className="border-t border-white/15
-                     bg-black/60 px-2 py-1
-                     flex items-center gap-2"
-        >
+      {/* Composer */}
+      <div className="p-4 bg-slate-100 border-t-2 border-slate-200">
+        <form onSubmit={handleSend} className="flex items-center gap-3">
           <input
             type="text"
-            className="flex-1 h2h-input rounded-full text-sm"
-            placeholder="พิมพ์ข้อความ..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             disabled={chatDisabled}
+            placeholder="พิมพ์ข้อความที่นี่..."
+            className="flex-1 px-5 py-3 border-2 border-slate-300 rounded-xl bg-white text-slate-900 text-base font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 placeholder-slate-400 shadow-sm"
           />
           <button
             type="submit"
             disabled={chatDisabled || !input.trim()}
-            className="h2h-btn px-4 py-2 rounded-full text-sm"
+            className="px-5 py-3 rounded-xl bg-emerald-600 text-white font-bold text-base hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-md transition-all"
           >
             ส่ง
           </button>
         </form>
       </div>
 
-      {/* Create order */}
-      <button
-        type="button"
-        onClick={handleCreateOrderClick}
-        disabled={orderDisabled}
-        className="w-full md:hidden h2h-btn"
-      >
-        {creatingOrder ? "กำลังสร้างคำสั่งซื้อ..." : "เปิดคำสั่งซื้อจากแชต"}
-      </button>
+      {/* Order Button */}
+      <div className="p-3 pt-0">
+        <button
+          type="button"
+          onClick={handleCreateOrderClick}
+          disabled={orderDisabled}
+          className="w-full py-3 rounded-xl text-sm font-semibold bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 shadow-md transition-all"
+        >
+          {creatingOrder ? "⏳ กำลังสร้าง..." : "🛒 เปิดคำสั่งซื้อ"}
+        </button>
+      </div>
 
-      {error && <p className="text-xs text-red-300">{error}</p>}
+      {error && (
+        <div className="px-4 py-2 bg-red-50 border-t border-red-100">
+          <p className="text-xs text-red-600">{error}</p>
+        </div>
+      )}
     </div>
   );
 }

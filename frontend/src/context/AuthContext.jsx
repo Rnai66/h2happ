@@ -100,6 +100,18 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // 🆕 Google Login
+  async function googleLogin(token) {
+    const res = await api("/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+    applyAuthFromResponse(res);
+    if (typeof res.tokenBalance !== "number") {
+      await fetchProfile();
+    }
+  }
+
   // 🆕 Register + Reward 10 Tokens
   async function register({ name, email, password, phone }) {
     // 1) สมัคร
@@ -164,6 +176,7 @@ export function AuthProvider({ children }) {
         isAuthenticated: !!token,
         loading,
         login,
+        googleLogin, // 🆕
         register,
         logout,
         refreshProfile: fetchProfile,

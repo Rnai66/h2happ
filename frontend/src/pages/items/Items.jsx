@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import Card from "../../components/ui/Card";
+import { useAuth } from "../../context/AuthContext";
 
 // รองรับทั้ง http://localhost:4000 และ http://localhost:4000/api
 const RAW_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000";
@@ -14,12 +15,14 @@ function useQuery() {
 }
 
 export default function Items() {
+  const { user } = useAuth();
   const query = useQuery();
   const q = query.get("q") || "";
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [showMyItems, setShowMyItems] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,6 +37,11 @@ export default function Items() {
           status: "active",
         });
         if (q) params.set("q", q);
+
+        // Filter by My Items
+        if (showMyItems && user?._id) {
+          params.set("sellerId", user._id);
+        }
 
         const res = await fetch(`${API_ROOT}/api/items?` + params.toString());
         if (!res.ok) throw new Error("โหลดรายการไม่สำเร็จ");
@@ -52,17 +60,32 @@ export default function Items() {
     }
     load();
     return () => (cancelled = true);
-  }, [q]);
+  }, [q, showMyItems, user]);
 
   return (
     <MainLayout>
       <div className="space-y-4">
-        <h1 className="text-xl font-semibold">สินค้ามือสองทั้งหมด</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h1 className="text-xl font-semibold">สินค้ามือสองทั้งหมด</h1>
+
+          {/* Toggle Filter */}
+          {user && (
+            <label className="flex items-center gap-2 cursor-pointer bg-white/10 px-3 py-1.5 rounded-lg hover:bg-white/20 transition-colors select-none">
+              <input
+                type="checkbox"
+                checked={showMyItems}
+                onChange={(e) => setShowMyItems(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium">แสดงเฉพาะสินค้าของฉัน</span>
+            </label>
+          )}
+        </div>
 
         {loading && <p>กำลังโหลด...</p>}
         {err && <p className="text-red-600">{err}</p>}
         {!loading && !err && items.length === 0 && (
-          <p className="text-slate-400">ยังไม่มีสินค้า</p>
+          <p className="text-slate-400">ยังไม่มีสินค้า {showMyItems ? "ของคุณ" : ""}</p>
         )}
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">

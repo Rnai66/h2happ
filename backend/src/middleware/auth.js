@@ -7,7 +7,12 @@ export default function auth(req, res, next) {
     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = { _id: payload._id, name: payload.name, role: payload.role || "user" };
+    req.user = {
+      _id: payload._id || payload.id,
+      id: payload.id || payload._id, // Add this alias to be safe
+      name: payload.name,
+      role: payload.role || "user"
+    };
     next();
   } catch {
     res.status(401).json({ message: "Unauthorized" });

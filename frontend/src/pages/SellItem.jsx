@@ -30,13 +30,36 @@ export default function SellItem() {
   const role = getRole();
   const MAX = maxImagesByRole(role);
 
+  const CATEGORIES = [
+    "มือถือและแท็บเล็ต",
+    "คอมพิวเตอร์และแล็ปท็อป",
+    "ยานยนต์",
+    "อสังหาริมทรัพย์",
+    "เสื้อผ้าแฟชั่นชาย",
+    "เสื้อผ้าแฟชั่นหญิง",
+    "นาฬิกาและเครื่องประดับ",
+    "เฟอร์นิเจอร์และของแต่งบ้าน",
+    "เครื่องใช้ไฟฟ้า",
+    "กีฬาสัตว์เลี้ยง",
+    "แม่และเด็ก",
+    "เกมและของเล่น",
+    "กล้องและอุปกรณ์",
+    "พระเครื่อง",
+    "หนังสือ",
+    "งานอดิเรก",
+    "อื่น ๆ"
+  ];
+
   const [form, setForm] = useState({
     title: "",
     price: "",
     location: "",
+    category: "",
     description: "",
-    imageUrls: "", // ยังพิมพ์ URL ได้เหมือนเดิม (optional)
+    imageUrls: "",
   });
+
+
 
   const [files, setFiles] = useState([]); // File[]
   // เก็บผล upload จาก Cloudinary: [{url, publicId, thumbUrl, previewUrl}]
@@ -99,7 +122,7 @@ export default function SellItem() {
         try {
           URL.revokeObjectURL(p.url);
           URL.revokeObjectURL(p.thumb);
-        } catch {}
+        } catch { }
       });
     };
   }, [previews, uploaded.length]);
@@ -190,7 +213,27 @@ export default function SellItem() {
     }
   }
 
-  async function handleSubmit(e) {
+  function triggerFileInput() {
+    document.getElementById("hidden-file-input")?.click();
+  }
+
+  function removeFile(index) {
+    const newFiles = [...files];
+    newFiles.splice(index, 1);
+    setFiles(newFiles);
+    // If uploaded, remove from uploaded list too?
+    // For simplicity, reset uploaded if files change (logic existing in onPickFiles)
+    // checking logic: if we remove a file, we should probably reset upload state or handle complex sync.
+    // simpler: clear uploaded and let user re-upload or just filter files.
+    // Existing logic clears uploaded on new pick. Let's keep it consistent:
+    setUploaded([]);
+
+    // Also update okMessage
+    if (newFiles.length === 0) setOkMessage("");
+  }
+
+
+  async function handleSubmit(e, targetStatus = "draft") {
     e.preventDefault();
     setError("");
     setOkMessage("");
@@ -214,21 +257,22 @@ export default function SellItem() {
         title: form.title.trim(),
         price: Number(form.price),
         location: form.location.trim(),
+        category: form.category.trim(),
         description: form.description.trim(),
         images,
-        status: "draft",
+        status: targetStatus, // ✅ Use target status (draft or active)
         // (optional) เก็บ publicIds ไว้ใน DB เพื่อ cleanup ทีหลังได้
         imagePublicIds: uploadedList.map((x) => x.publicId).filter(Boolean),
       };
 
       await api.post("/items", payload);
 
-      setOkMessage("✅ บันทึกร่างสินค้าแล้ว");
-      setForm({ title: "", price: "", location: "", description: "", imageUrls: "" });
+      setOkMessage(targetStatus === "active" ? "✅ เผยแพร่สินค้าแล้ว!" : "✅ บันทึกร่างสินค้าแล้ว");
+      setForm({ title: "", price: "", location: "", category: "", description: "", imageUrls: "" });
       setFiles([]);
       setUploaded([]);
 
-      setTimeout(() => nav("/me/listings"), 300);
+      setTimeout(() => nav("/me/listings"), 800);
     } catch (err) {
       setError(err.message || "ลงขายไม่สำเร็จ");
     } finally {
@@ -238,77 +282,65 @@ export default function SellItem() {
 
   return (
     <MainLayout>
-      {/* ✅ เพิ่ม wrapper เฉพาะหน้า sell เพื่อบังคับความชัด */}
-      <div className="h2h-sell max-w-xl mx-auto">
-        {/* ✅ ให้ Card ใช้ธีมมืด glass ของระบบ */}
+      <div className="h2h-sell max-w-xl mx-auto pb-20">
         <Card className="h2h-card">
-          <div className="p-4 md:p-6 space-y-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                {/* ✅ เปลี่ยน text-slate-900 → text-white */}
-                <h1 className="text-xl font-semibold text-white">ลงขายสินค้ามือสอง</h1>
-                {/* ✅ เปลี่ยน text-slate-500 → text-white/70 */}
-                <p className="text-sm text-white/70">
-                  บันทึกเป็น “ร่าง (Draft)” ก่อนเผยแพร่ • แพ็กเกจของคุณ:{" "}
-                  <b className="text-white">{role}</b> (สูงสุด {MAX} รูป)
-                </p>
-              </div>
+          <div className="p-4 md:p-6 space-y-6">
 
-              <button
-                type="button"
-                disabled={loading}
-                onClick={handleCancelDraft}
-                className="px-3 py-2 rounded-lg border border-white/20 text-sm text-white/85
-                           hover:bg-white/10 disabled:opacity-60"
-                title="ยกเลิกและลบรูปที่อัปโหลด"
-              >
-                ยกเลิก/ลบรูป
-              </button>
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <h1 className="text-xl font-semibold text-[var(--text-main)]">ลงขายสินค้า</h1>
+              <div className="text-xs text-[var(--text-muted)]">
+                แพ็กเกจ: <b className="text-[var(--text-main)]">{role}</b> (Max {MAX})
+              </div>
             </div>
 
-            {/* Mobile Preview */}
-            {/* ✅ เปลี่ยน bg-white → bg-black/40 + border ขาวโปร่ง */}
-            <div className="bg-black/40 border border-white/15 rounded-2xl p-4 shadow-silk">
-              <div className="text-xs text-white/60 mb-2">ตัวอย่างบนมือถือ</div>
+            {/* ✅ 1. Image Grid (Top) */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-[var(--text-main)]">รูปภาพสินค้า ({files.length}/{MAX})</label>
 
-              {/* ✅ เปลี่ยน bg-slate-100 → bg-black/40 */}
-              <div className="rounded-xl bg-black/40 border border-white/10 overflow-hidden aspect-square flex items-center justify-center">
-                {previews[0]?.url ? (
-                  <img src={previews[0].url} alt="preview" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="text-white/55 text-sm">No image</div>
+              <div className="grid grid-cols-4 md:grid-cols-5 gap-3">
+                {/* Upload Button */}
+                {files.length < MAX && (
+                  <button
+                    type="button"
+                    onClick={triggerFileInput}
+                    className="aspect-square rounded-xl border-2 border-dashed border-[var(--glass-border)]
+                               flex flex-col items-center justify-center gap-1
+                               hover:bg-[var(--glass-border)] transition text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                  >
+                    <span className="text-2xl">📷</span>
+                    <span className="text-[10px]">เพิ่มรูป</span>
+                  </button>
                 )}
+
+                {/* Previews */}
+                {previews.map((p, idx) => (
+                  <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-[var(--glass-border)] bg-black/5 group">
+                    <img src={p.thumb || p.url} alt="preview" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeFile(idx)}
+                      className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition shadow-sm"
+                    >
+                      ×
+                    </button>
+                    {idx === 0 && <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[9px] text-center py-0.5">ปก</div>}
+                  </div>
+                ))}
               </div>
 
-              {previews.length > 1 && (
-                <div className="mt-2 grid grid-cols-5 gap-2">
-                  {previews.slice(0, 5).map((p) => (
-                    <div key={p.thumb} className="aspect-square rounded-lg overflow-hidden bg-black/40 border border-white/10">
-                      <img src={p.thumb} alt={p.name} className="w-full h-full object-cover" />
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="mt-3">
-                <div className="font-semibold line-clamp-2 text-white">
-                  {form.title || "ชื่อสินค้า"}
-                </div>
-                {/* ✅ ราคาให้เด่น */}
-                <div className="text-sm text-yellow-300 mt-1">฿ {form.price || "0"}</div>
-                <div className="text-xs text-white/70 mt-1 line-clamp-2">
-                  {form.description || "รายละเอียดสินค้า"}
-                </div>
-              </div>
-
-              {uploaded.length > 0 && (
-                <div className="text-xs text-emerald-300 mt-2">
-                  Uploaded: {uploaded.length} รูป (Cloudinary)
-                </div>
-              )}
+              {/* Hidden Input */}
+              <input
+                id="hidden-file-input"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                multiple
+                onChange={onPickFiles}
+                className="hidden"
+              />
             </div>
 
-            {/* ✅ ปรับ alert ให้อ่านง่ายบนพื้นมืด */}
+            {/* Error/Success Messages */}
             {error && (
               <p className="text-sm text-red-200 bg-red-950/35 border border-red-400/20 px-3 py-2 rounded-lg">
                 {error}
@@ -320,131 +352,102 @@ export default function SellItem() {
               </p>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Form Fields */}
+            <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
               <div className="space-y-1">
-                {/* ✅ label สีขาว */}
-                <label className="text-sm font-medium text-white">ชื่อสินค้า</label>
+                <label className="text-sm font-medium text-[var(--text-main)]">ชื่อสินค้า *</label>
                 <input
                   name="title"
-                  type="text"
-                  className="h2h-input w-full"
-                  placeholder="เช่น iPhone 13 128GB สีดำ"
                   value={form.title}
                   onChange={handleChange}
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-white">ราคา (บาท)</label>
-                <input
-                  name="price"
-                  type="number"
-                  min="0"
+                  placeholder="เช่น iPhone 13 สภาพนางฟ้า"
                   className="h2h-input w-full"
-                  placeholder="เช่น 12000"
-                  value={form.price}
-                  onChange={handleChange}
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-white">สถานที่นัดรับ / จัดส่ง</label>
-                <input
-                  name="location"
-                  type="text"
-                  className="h2h-input w-full"
-                  placeholder="เช่น BTS อโศก หรือ จัดส่ง"
-                  value={form.location}
-                  onChange={handleChange}
-                />
-              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-[var(--text-main)]">ราคา (฿) *</label>
+                  <input
+                    name="price"
+                    type="number"
+                    value={form.price}
+                    onChange={handleChange}
+                    placeholder="0"
+                    className="h2h-input w-full"
+                  />
+                </div>
 
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-white">รายละเอียดสินค้า</label>
-                <textarea
-                  name="description"
-                  rows={4}
-                  className="h2h-input w-full"
-                  placeholder="สภาพดีมาก มีรอยนิดหน่อย ฯลฯ"
-                  value={form.description}
-                  onChange={handleChange}
-                />
-              </div>
-
-              {/* Upload */}
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-white">อัปโหลดรูป (สูงสุด {MAX} รูป)</label>
-
-                {/* ✅ file input อ่านง่าย */}
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  multiple
-                  onChange={onPickFiles}
-                  className="w-full text-sm text-white/85
-                             file:mr-3 file:rounded-lg file:border-0
-                             file:bg-white/10 file:text-white file:px-3 file:py-2
-                             hover:file:bg-white/15"
-                />
-
-                <div className="flex gap-2 pt-2 items-center">
-                  <button
-                    type="button"
-                    disabled={loading}
-                    onClick={handleUploadOnly}
-                    className="px-3 py-2 rounded-lg border border-white/20 text-sm text-white/85
-                               hover:bg-white/10 disabled:opacity-60"
-                  >
-                    {loading ? "..." : "อัปโหลดรูป"}
-                  </button>
-                  <div className="text-xs text-white/60">
-                    (หรือกด “บันทึกร่างสินค้า” ได้เลย ระบบจะอัปโหลดให้)
-                  </div>
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-[var(--text-main)]">หมวดหมู่</label>
+                  <input
+                    name="category"
+                    list="category-options"
+                    value={form.category}
+                    onChange={handleChange}
+                    placeholder="เลือกหมวดหมู่..."
+                    className="h2h-input w-full"
+                  />
+                  <datalist id="category-options">
+                    {CATEGORIES.map(c => <option key={c} value={c} />)}
+                  </datalist>
                 </div>
               </div>
 
-              {/* manual URLs */}
               <div className="space-y-1">
-                <label className="text-sm font-medium text-white">
-                  ลิงก์รูปภาพ (คั่นด้วย ,) — optional
-                </label>
-                <textarea
-                  name="imageUrls"
-                  rows={2}
-                  className="h2h-input w-full text-sm"
-                  placeholder="https://..., https://..."
-                  value={form.imageUrls}
+                <label className="text-sm font-medium text-[var(--text-main)]">สถานที่นัดรับ *</label>
+                <input
+                  name="location"
+                  type="text"
+                  value={form.location}
                   onChange={handleChange}
+                  placeholder="เช่น BTS อโศก, จัดส่งด่วน"
+                  className="h2h-input w-full"
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  className="text-sm text-white/65 hover:text-white"
-                  onClick={() => nav(-1)}
-                >
-                  ← กลับ
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-4 py-2 rounded-xl text-sm font-medium text-white
-                             bg-gradient-to-r from-[#2563EB] to-[#D4AF37]
-                             hover:from-[#1D4ED8] hover:to-[#facc15]
-                             disabled:opacity-60"
-                >
-                  {loading ? "กำลังบันทึก..." : "บันทึกร่างสินค้า"}
-                </button>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-[var(--text-main)]">รายละเอียด</label>
+                <textarea
+                  name="description"
+                  rows={4}
+                  value={form.description}
+                  onChange={handleChange}
+                  placeholder="รายละเอียดเพิ่มเติม..."
+                  className="h2h-input w-full"
+                />
               </div>
-
-              {/* ✅ เปลี่ยน text-slate-500 → text-white/60 */}
-              <p className="text-xs text-white/60">
-                หลังบันทึกร่างแล้ว ไปหน้า <b className="text-white">My Listings</b> แล้วกด{" "}
-                <b className="text-white">Publish</b>
-              </p>
             </form>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <button
+                type="button"
+                onClick={(e) => handleSubmit(e, "draft")} // Draft Status
+                disabled={loading}
+                className="px-4 py-3 rounded-xl font-medium text-[var(--text-main)] bg-[var(--glass-border)] hover:bg-black/10 dark:hover:bg-white/10 transition"
+              >
+                บันทึกร่าง
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => handleSubmit(e, "active")} // Active Status
+                disabled={loading}
+                className="px-4 py-3 rounded-xl font-medium text-white
+                            bg-gradient-to-r from-[#2563EB] to-[#D4AF37] shadow-lg
+                            hover:scale-[1.02] active:scale-[0.98] transition"
+              >
+                {loading ? "กำลังบันทึก..." : "เผยแพร่ (Publish)"}
+              </button>
+            </div>
+
+            <div className="flex justify-center pt-2">
+              <button onClick={handleCancelDraft} className="text-xs text-[var(--text-muted)] underline">
+                ล้างข้อมูล
+              </button>
+            </div>
+
           </div>
         </Card>
       </div>

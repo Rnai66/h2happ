@@ -11,6 +11,8 @@ import App from "./App";
 
 // 🔐 ดึง AuthProvider + useAuth
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { NotificationProvider } from "./context/NotificationContext";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 function H2HHeader() {
   const nav = useNavigate();
@@ -145,10 +147,13 @@ export default function MainLayout({ children }) {
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <BrowserRouter>
-      {/* ✅ ครอบ App ด้วย AuthProvider */}
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID"}>
+        <AuthProvider>
+          <NotificationProvider>
+            <App />
+          </NotificationProvider>
+        </AuthProvider>
+      </GoogleOAuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

@@ -1,6 +1,8 @@
 import express from "express";
 import ChatThread from "../models/ChatThread.js";
 import ChatMessage from "../models/ChatMessage.js";
+import User from "../models/User.js";
+import Item from "../models/Item.js";
 import auth from "../middleware/auth.js";
 
 const router = express.Router();
@@ -76,6 +78,26 @@ router.get("/threads/mine", auth, async (req, res, next) => {
       }
     }
 
+    // ✅ Manual Population (User & Item)
+    const allUserIds = new Set();
+    const allItemIds = new Set();
+    threads.forEach((t) => {
+      if (t.buyerId) allUserIds.add(t.buyerId.toString());
+      if (t.sellerId) allUserIds.add(t.sellerId.toString());
+      if (t.itemId) allItemIds.add(t.itemId.toString());
+    });
+
+    const [usersFound, itemsFound] = await Promise.all([
+      User.find({ _id: { $in: [...allUserIds] } }).lean(),
+      Item.find({ _id: { $in: [...allItemIds] } }).lean(),
+    ]);
+
+    const userMap = {};
+    usersFound.forEach((u) => (userMap[u._id.toString()] = u));
+
+    const itemMap = {};
+    itemsFound.forEach((i) => (itemMap[i._id.toString()] = i));
+
     const enriched = threads.map((t) => {
       const tid = t._id.toString();
       const buyerId = t.buyerId?.toString?.() || String(t.buyerId || "");
@@ -83,16 +105,27 @@ router.get("/threads/mine", auth, async (req, res, next) => {
       const isBuyer = buyerId === userId;
       const partnerId = isBuyer ? sellerId : buyerId;
 
+      const partnerUser = userMap[partnerId];
+      // Fallback: real user name -> stored name -> default
       const partnerName =
+        partnerUser?.name ||
+        partnerUser?.username ||
+        partnerUser?.email ||
         (isBuyer ? t.sellerName : t.buyerName) ||
         t.partnerName ||
         "คู่สนทนา";
 
+      const partnerAvatar = partnerUser?.profileImage || partnerUser?.avatar || null;
+
+      const realItem = itemMap[t.itemId?.toString()];
       const itemTitle =
+        realItem?.title ||
         t.itemSnapshot?.title ||
         t.itemTitle ||
         t.itemName ||
         "สินค้าชิ้นหนึ่ง";
+
+      const itemImage = realItem?.images?.[0] || t.itemSnapshot?.image || null;
 
       return {
         ...t,
@@ -100,10 +133,12 @@ router.get("/threads/mine", auth, async (req, res, next) => {
         partner: {
           id: partnerId,
           name: partnerName,
+          avatar: partnerAvatar,
         },
         item: {
           id: t.itemId,
           title: itemTitle,
+          image: itemImage,
         },
         lastMessage: lastMessagesByThread[tid] || null,
       };

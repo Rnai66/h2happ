@@ -34,6 +34,7 @@ export function getConnection(dbName) {
 export const DBNAMES = {
   USER: process.env.DB_USER || "user_db",
   ITEM: process.env.DB_ITEM || "item_db",
+  ORDER: process.env.DB_ORDER || "order_db", // ✅ Add Missing ORDER DB
   PAYMENT: process.env.DB_PAYMENT || "payment_db",
   TOKEN: process.env.DB_TOKEN || "token_db",
   PROFILE: process.env.DB_PROFILE || "profile_db",

@@ -64,6 +64,67 @@ export async function login(req, res) {
   }
 }
 
+// 🆕 Google Login Controller
+import fetch from "node-fetch";
+
+export async function googleLogin(req, res) {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ message: "Token is required" });
+
+    // 1) Verify Access Token via Google UserInfo API
+    const googleRes = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!googleRes.ok) {
+      const errorData = await googleRes.json();
+      throw new Error(errorData.error_description || "Invalid Google Token");
+    }
+
+    const payload = await googleRes.json();
+    const { sub: googleId, email, name, picture } = payload;
+
+    const conn = getConnection(DBNAMES.USER);
+    const User = UserModel(conn);
+
+    // 2) Find or update/create user
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // Link googleId if not linked
+      if (!user.googleId) {
+        user.googleId = googleId;
+        if (!user.avatar) user.avatar = picture;
+        await user.save();
+      }
+    } else {
+      // Register new user via Google
+      user = await User.create({
+        name,
+        email,
+        googleId,
+        avatar: picture,
+        role: "user",
+        // passwordHash is optional now
+      });
+    }
+
+    // 3) Sign App Token
+    const appToken = signToken(user);
+
+    return res.json({
+      message: "✅ Google Login success",
+      token: appToken,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, avatar: user.avatar }
+    });
+
+  } catch (err) {
+    console.error("Google Login Error:", err);
+    return res.status(401).json({ message: "Google Authentication Failed", error: err.message });
+  }
+}
+
 export async function getProfile(req, res) {
   try {
     const conn = getConnection(DBNAMES.USER);

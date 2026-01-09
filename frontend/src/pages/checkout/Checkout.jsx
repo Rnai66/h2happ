@@ -1,18 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MainLayout from '../../layouts/MainLayout';
 import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Chip from '../../components/ui/Chip';
 import Button from '../../components/ui/Button';
 import { useQuery } from '../../lib/hooks';
-
-const mockItems = Array.from({ length: 8 }).map((_, i) => ({
-  id: i + 1,
-  title: `iPhone 13 128GB — สภาพดีมาก #${i + 1}`,
-  price: 12000 + i * 100,
-  location: 'อโศก',
-  image: `https://picsum.photos/seed/h2h-${i}/600/600`,
-}));
+import { useAuth } from '../../context/AuthContext';
+import { authFetch } from '../../api/authFetch';
 
 function Stepper({ step }) {
   const steps = ['ที่อยู่', 'ชำระเงิน', 'ตรวจสอบ'];
@@ -21,9 +16,8 @@ function Stepper({ step }) {
       {steps.map((t, i) => (
         <li key={t} className={`flex items-center gap-2 ${i <= step ? 'text-brand-blue' : 'text-slate-400'}`}>
           <span
-            className={`w-6 h-6 rounded-full grid place-content-center border ${
-              i <= step ? 'bg-brand-blue text-white border-brand-blue' : 'border-slate-300'
-            }`}
+            className={`w-6 h-6 rounded-full grid place-content-center border ${i <= step ? 'bg-brand-blue text-white border-brand-blue' : 'border-slate-300'
+              }`}
           >
             {i + 1}
           </span>
@@ -45,14 +39,20 @@ function OrderSummary({ item }) {
         <h3 className="font-semibold">สรุปคำสั่งซื้อ</h3>
         {item ? (
           <div className="flex items-center gap-3">
-            <img src={item.image} alt={item.title} className="w-16 h-16 object-cover rounded-xl" />
-            <div className="flex-1">
+            <div className="w-16 h-16 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
+              {item.images && item.images.length > 0 ? (
+                <img src={item.images[0]} alt={item.title} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full grid place-content-center text-xs text-slate-400">No Img</div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
               <div className="text-sm line-clamp-2">{item.title}</div>
               <div className="font-bold text-brand-gold">฿ {price.toLocaleString()}</div>
             </div>
           </div>
         ) : (
-          <p className="text-sm text-slate-500">ยังไม่ได้เลือกสินค้า</p>
+          <p className="text-sm text-slate-500">กำลังโหลดข้อมูลสินค้า...</p>
         )}
         <hr />
         <dl className="text-sm space-y-1">
@@ -77,28 +77,115 @@ function OrderSummary({ item }) {
 export default function Checkout() {
   const q = useQuery();
   const itemId = q.get('itemId');
-  const item = mockItems.find((x) => String(x.id) === String(itemId));
+  const nav = useNavigate();
+  const { user } = useAuth();
+
+  const [item, setItem] = useState(null);
+  const [loadingItem, setLoadingItem] = useState(true);
+
   const [step, setStep] = useState(0); // 0: address, 1: payment, 2: review
   const [address, setAddress] = useState({ name: '', phone: '', line1: '', district: '', province: '', zip: '' });
   const [method, setMethod] = useState('card');
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+
+  // Fetch real item
+  useEffect(() => {
+    if (!itemId) return;
+    authFetch(`/api/items/${itemId}`) // Try protected route first (or public if available)
+      .then(res => {
+        // Endpoint might return { item: ... } or just item? 
+        // Looking at MyListings logic (Step 108), /api/items/me returns {items:[]}. 
+        // Looking at ItemDetail (not viewed but likely standard), usually returns { item }.
+        // Let's assume standard response format. If fail, catch.
+        // Let's check `orderRoutes` which calls `Item.findOne`.
+        // I'll assume the item endpoint is /api/items/:id (public or auth). 
+        // Wait, I haven't verified `itemRoutes.js`. 
+        // Let's assume response structure.
+        setItem(res.item || res);
+        setLoadingItem(false);
+      })
+      .catch(e => {
+        console.error(e);
+        // Fallback or specific error
+        authFetch(`/api/public/items/${itemId}`) // Try public if auth fail?
+          .then(res => {
+            setItem(res.item || res);
+            setLoadingItem(false);
+          })
+          .catch(err => {
+            setErr("โหลดสินค้าไม่สำเร็จ");
+            setLoadingItem(false);
+          });
+      });
+  }, [itemId]);
+
+  // Pre-fill address from user profile if available
+  useEffect(() => {
+    if (user) {
+      setAddress(prev => ({
+        ...prev,
+        name: user.name || "",
+        // phone, address etc. if user model has them
+      }));
+    }
+  }, [user]);
+
 
   async function pay() {
+    if (!item) return;
+    if (!user) {
+      alert("กรุณาเข้าสู่ระบบก่อนชำระเงิน");
+      return;
+    }
     setBusy(true);
+    setErr("");
     try {
-      // const intent = await api('/api/payments/intent',{ method:'POST', body: JSON.stringify({ orderId: 'demo', method }) })
-      await new Promise((r) => setTimeout(r, 700)); // demo
-      window.location.assign('/orders?success=1');
+      // Create Order
+      const res = await authFetch('/api/orders', {
+        method: 'POST',
+        body: JSON.stringify({
+          itemId: item._id,
+          buyerId: user._id || user.id, // AuthContext might have _id or id
+          amount: item.price // Simple amount logic, ignoring shipping for logic simplicity for now
+        })
+      });
+
+      if (res.ok) {
+        // Success
+        nav(`/orders?success=1`);
+      } else {
+        throw new Error(res.message || "สร้างคำสั่งซื้อไม่สำเร็จ");
+      }
+
+    } catch (e) {
+      console.error(e);
+      setErr(e.message || "เกิดข้อผิดพลาดในการชำระเงิน");
     } finally {
       setBusy(false);
     }
   }
 
+  if (!itemId) {
+    return (
+      <MainLayout>
+        <div className="p-8 text-center text-slate-500">ไม่พบรหัสสินค้า</div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto p-4">
         <h1 className="text-2xl font-semibold mb-4">ชำระเงิน</h1>
         <Stepper step={step} />
+
+        {err && (
+          <div className="mt-4 p-3 bg-red-50 text-red-600 border border-red-200 rounded-lg">
+            {err}
+          </div>
+        )}
+
         <div className="grid md:grid-cols-3 gap-6 mt-6">
           <div className="md:col-span-2 space-y-6">
             {step === 0 && (

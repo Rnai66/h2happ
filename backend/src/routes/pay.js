@@ -71,17 +71,54 @@ async function markOrderPaid(order, opts = {}) {
 // =========================================================
 // MOCK PAYMENT
 // =========================================================
-router.post("/mock", async (req, res) => {
-  console.log("💰 MOCK request body:", req.body);
-
-  const { orderId, amount, method = "mock" } = req.body;
+// =========================================================
+// MANUAL CONFIRM (Buyer clicks 'Paid')
+// =========================================================
+router.post("/confirm", async (req, res) => {
+  const { orderId, amount, method } = req.body;
   if (!orderId) return res.status(400).json({ ok: false, error: "missing_order" });
 
   const order = await Order.findById(orderId);
   if (!order) return res.status(404).json({ ok: false, error: "order_not_found" });
 
-  const payment = await markOrderPaid(order, { method, amount });
-  return res.json({ ok: true, paid: true, order, payment });
+  // Update to pending verification
+  order.paymentStatus = "pending_verification"; // Wait for seller/webhook
+  order.status = "pending";
+  // order.proofOfPayment should be set via /slip upload separately
+  await order.save();
+
+  // Create Payment record if not exists
+  await Payment.findOneAndUpdate(
+    { orderId },
+    {
+      orderId,
+      amount: amount || order.amount,
+      method,
+      status: "pending",
+      currency: "THB"
+    },
+    { upsert: true }
+  );
+
+  return res.json({ ok: true, order });
+});
+
+// =========================================================
+// GENERIC WEBHOOK (Bank/Payment Gateway)
+// =========================================================
+router.post("/webhook", express.json(), async (req, res) => {
+  console.log("🔔 Generic Webhook:", req.body);
+  // Expected payload: { orderId, status: 'success'|'failed', amount, meta }
+  const { orderId, status, amount } = req.body;
+
+  if (orderId && status === 'success') {
+    const order = await Order.findById(orderId);
+    if (order) {
+      await markOrderPaid(order, { amount, method: 'webhook' });
+      console.log(`✅ Order ${orderId} marked paid via webhook`);
+    }
+  }
+  return res.json({ ok: true });
 });
 
 // =========================================================

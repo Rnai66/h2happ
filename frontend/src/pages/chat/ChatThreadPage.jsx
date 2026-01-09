@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
-import Card from "../../components/ui/Card";
 import ChatBox from "../../components/ChatBox";
 import { api } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
@@ -23,12 +22,7 @@ export default function ChatThreadPage() {
         setErr("");
 
         if (!isAuthenticated || !user) {
-          nav(
-            `/auth?tab=login&redirectTo=${encodeURIComponent(
-              `/chat/${threadId}`
-            )}`,
-            { replace: true }
-          );
+          nav(`/auth?tab=login&redirectTo=${encodeURIComponent(`/chat/${threadId}`)}`, { replace: true });
           return;
         }
 
@@ -87,8 +81,11 @@ export default function ChatThreadPage() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="h2h-chat max-w-3xl mx-auto p-6 text-white/80">
-          กำลังโหลดแชต...
+        <div className="max-w-2xl mx-auto p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+            <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-500">กำลังโหลด...</p>
+          </div>
         </div>
       </MainLayout>
     );
@@ -97,70 +94,90 @@ export default function ChatThreadPage() {
   if (err || !thread) {
     return (
       <MainLayout>
-        <div className="h2h-chat max-w-3xl mx-auto p-6 text-red-300">
-          โหลดแชตไม่สำเร็จ: {err || "ไม่พบแชตนี้"}
+        <div className="max-w-2xl mx-auto p-6">
+          <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">😔</span>
+            </div>
+            <p className="text-red-600 mb-4">{err || "ไม่พบแชตนี้"}</p>
+            <Link
+              to="/chat"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-emerald-500 text-white hover:bg-emerald-600 transition-colors"
+            >
+              ← กลับหน้าแชต
+            </Link>
+          </div>
         </div>
       </MainLayout>
     );
   }
 
   const isBuyer = String(thread.buyerId) === String(user._id || user.id);
+  const partnerName = thread?.partner?.name || (isBuyer ? "ผู้ขาย" : "ผู้ซื้อ");
 
   return (
     <MainLayout>
-      <div className="h2h-chat max-w-3xl mx-auto space-y-4">
-        {/* ===== Header: Item Info ===== */}
+      <div className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+        {/* Header Bar */}
+        <div className="bg-white rounded-2xl shadow-md p-4 flex items-center gap-4">
+          <Link
+            to="/chat"
+            className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors"
+          >
+            ←
+          </Link>
+          <div className="flex-1 min-w-0">
+            <h1 className="font-bold text-gray-800 truncate text-lg">{partnerName}</h1>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+              <span className="text-xs text-gray-500">ออนไลน์</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Product Card */}
         {item && (
-          <Card>
-            <div className="p-4 flex gap-3 items-center">
-              <div className="w-16 h-16 rounded-xl bg-black/40 overflow-hidden flex-shrink-0
-                              grid place-content-center border border-white/15">
+          <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+            <div className="p-4 flex gap-4">
+              {/* Image */}
+              <div className="w-24 h-24 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-200">
                 {item.images?.[0] ? (
-                  <img
-                    src={item.images[0]}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={item.images[0]} alt={item.title} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-white/60 text-xl">📦</span>
+                  <div className="w-full h-full flex items-center justify-center text-3xl text-gray-300">📦</div>
                 )}
               </div>
 
+              {/* Details */}
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-white truncate">
-                  {item.title}
-                </div>
-                <div className="text-sm text-yellow-300 font-semibold">
+                <h2 className="font-semibold text-gray-800 truncate">{item.title}</h2>
+                <p className="text-xl font-bold text-orange-500 mt-1">
                   ฿{Number(item.price || 0).toLocaleString("th-TH")}
-                </div>
-                <div className="text-xs text-white/70 truncate">
-                  {item.location || "ยังไม่ระบุสถานที่นัดรับ"}
-                </div>
-                <div className="mt-1 text-[11px] text-white/60">
-                  คุณเป็น{" "}
-                  <span className="font-semibold text-white">
-                    {isBuyer ? "ผู้ซื้อ" : "ผู้ขาย"}
-                  </span>{" "}
-                  ในดีลนี้
-                </div>
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  📍 {item.location || "ยังไม่ระบุ"}
+                </p>
+                <span className={`inline-block mt-2 px-2 py-0.5 rounded-full text-xs font-medium ${isBuyer ? "bg-blue-100 text-blue-700" : "bg-emerald-100 text-emerald-700"
+                  }`}>
+                  {isBuyer ? "🛒 ผู้ซื้อ" : "🏪 ผู้ขาย"}
+                </span>
               </div>
             </div>
-          </Card>
+          </div>
         )}
 
-        {/* ===== Chat Box ===== */}
-        <Card>
-          <div className="p-4">
-            <ChatBox
-              token={isAuthenticated}
-              threadId={threadId}
-              buyerId={thread.buyerId}
-              sellerId={thread.sellerId}
-              itemId={thread.itemId}
-              onCreateOrder={handleCreateOrder}
-            />
-          </div>
-        </Card>
+        {/* Chat Box */}
+        <div className="h-[450px]">
+          <ChatBox
+            token={isAuthenticated}
+            threadId={threadId}
+            buyerId={thread.buyerId}
+            sellerId={thread.sellerId}
+            itemId={thread.itemId}
+            price={item?.price}
+            onCreateOrder={handleCreateOrder}
+          />
+        </div>
       </div>
     </MainLayout>
   );

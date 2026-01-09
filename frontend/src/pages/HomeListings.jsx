@@ -57,11 +57,11 @@ export default function HomeListings() {
       <div className="space-y-4">
         <header className="flex items-center justify-between gap-3">
           <div>
-            <h1 className="text-xl font-semibold">
+            <h1 className="text-xl font-semibold text-[var(--text-main)]">
               H2H Thailand  สินค้าล่าสุด
             </h1>
             {q && (
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[var(--text-muted)]">
                 ผลการค้นหา: "{q}"
               </p>
             )}
@@ -77,11 +77,11 @@ export default function HomeListings() {
           </button>
         </header>
 
-        {loading && <p className="text-sm text-slate-500">กำลังโหลด...</p>}
+        {loading && <p className="text-sm text-[var(--text-muted)]">กำลังโหลด...</p>}
         {err && <p className="text-sm text-red-500">{err}</p>}
 
         {!loading && !err && items.length === 0 && (
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-[var(--text-muted)]">
             ยังไม่มีสินค้าในระบบ ลองลงขายชิ้นแรกเลย!
           </p>
         )}
@@ -89,23 +89,29 @@ export default function HomeListings() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {items.map((item) => (
             <Link key={item._id} to={`/items/${item._id}`} className="block">
-              <Card>
-                <div className="aspect-square w-full overflow-hidden rounded-t-xl bg-slate-100">
+              <Card className="h2h-card border-none hover:shadow-lg transition-all duration-300">
+                <div className="aspect-square w-full overflow-hidden rounded-t-xl bg-black/5 dark:bg-white/10 relative">
                   <img
-                    src={item.images?.[0] || "https://picsum.photos/400"}
+                    src={item.images?.[0] || "https://placehold.co/400x300?text=No+Image"}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="p-3 space-y-1">
-                  <h2 className="text-sm font-semibold line-clamp-2">
+                  <h2 className="text-sm font-semibold line-clamp-2 text-[var(--text-main)]">
                     {item.title}
                   </h2>
-                  <p className="text-base font-bold text-blue-700">
-                    ฿{Number(item.price || 0).toLocaleString("th-TH")}
-                  </p>
+                  <div className="flex items-baseline justify-between gap-1">
+                    <p className="text-base font-bold text-[var(--text-accent)]">
+                      ฿{Number(item.price || 0).toLocaleString("th-TH")}
+                    </p>
+                    <p className="text-xs text-[var(--text-muted)] truncate max-w-[60%]">
+                      {item.seller?.name || item.sellerName || "ไม่ระบุ"} <br />
+                      <span className="text-[10px] opacity-75">{item.seller?.email}</span>
+                    </p>
+                  </div>
                   {item.location && (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-[var(--text-muted)]">
                       📍 {item.location}
                     </p>
                   )}

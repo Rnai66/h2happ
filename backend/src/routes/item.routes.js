@@ -67,10 +67,30 @@ router.get("/", async (req, res, next) => {
     const keyword = (q || "").toString().trim();
     if (keyword) filter.title = { $regex: keyword, $options: "i" };
 
-    const [items, total] = await Promise.all([
-      Item.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean(),
-      Item.countDocuments(filter),
-    ]);
+    const itemsDocs = await Item.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limitNum).lean();
+    const total = await Item.countDocuments(filter);
+
+    // Manual Populate
+    const sellerIds = [...new Set(itemsDocs.map(i => i.sellerId).filter(id => id))];
+    const users = await User.find({ _id: { $in: sellerIds } }).select("name email").lean();
+
+    // Create Map
+    const userMap = {};
+    users.forEach(u => { userMap[String(u._id)] = u; });
+
+    // Map back
+    const items = itemsDocs.map(it => {
+      const u = userMap[String(it.sellerId)];
+      return {
+        ...it,
+        seller: {
+          _id: u?._id || it.sellerId,
+          name: u?.name || it.sellerName || "ไม่ระบุ",
+          email: u?.email || "-"
+        },
+        sellerName: u?.name || it.sellerName || "ไม่ระบุ"
+      };
+    });
 
     return res.json({ items, page: pageNum, limit: limitNum, total });
   } catch (err) {
@@ -88,6 +108,25 @@ router.get("/:id([0-9a-fA-F]{24})", async (req, res, next) => {
   try {
     const it = await Item.findOne({ _id: req.params.id, isDeleted: { $ne: true } }).lean();
     if (!it) return res.status(404).json({ message: "Item not found" });
+
+    // Manual Populate for single item
+    let seller = {};
+    if (it.sellerId) {
+      const u = await User.findById(it.sellerId).select("name email").lean();
+      if (u) {
+        seller = { _id: u._id, name: u.name, email: u.email };
+      }
+    }
+
+    // Fallback
+    const finalName = seller.name || it.sellerName || "ไม่ระบุ";
+    it.seller = {
+      _id: seller._id || it.sellerId,
+      name: finalName,
+      email: seller.email || "-"
+    };
+    it.sellerName = finalName;
+
     return res.json(it);
   } catch (err) {
     next(err);

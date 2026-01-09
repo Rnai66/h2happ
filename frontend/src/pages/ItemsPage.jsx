@@ -102,12 +102,12 @@ export default function ItemsPage() {
   return (
     <div className="space-y-4">
       {/* Debug panel (ถ้ารบกวนตา คอมเมนต์ทิ้งได้) */}
-      <div className="text-xs p-2 rounded-lg bg-black/30 border border-white/10">
+      <div className="text-xs p-2 rounded-lg bg-black/80 text-white border border-white/10">
         <div>BASE: <code>{BASE}</code></div>
         <div>Token length: {tokenLen} {tokenLen ? "(signed in)" : "(not signed in)"}</div>
         <div>Loading: {String(loadingItems)} | Items: {items.length}</div>
         {err && <div className="text-amber-300">Error: {err}</div>}
-        {lastLogRef.current && <div className="text-[var(--fg-muted)]">Last: {lastLogRef.current}</div>}
+        {lastLogRef.current && <div className="text-white/70">Last: {lastLogRef.current}</div>}
         <div className="mt-1 flex gap-2">
           <button onClick={loadItems} className="px-2 py-1 rounded bg-white/10">Reload</button>
           {!tokenLen && (
@@ -121,12 +121,12 @@ export default function ItemsPage() {
       <h1 className="text-2xl font-bold title-glow mb-2">รายการสินค้า</h1>
 
       {loadingItems && (
-        <div className="text-[var(--fg-muted)]">กำลังโหลดรายการสินค้า...</div>
+        <div className="text-[var(--text-muted)]">กำลังโหลดรายการสินค้า...</div>
       )}
 
       {!loadingItems && items.length === 0 && (
         <div className="space-y-2">
-          <div className="text-[var(--fg-muted)]">ยังไม่มีสินค้า</div>
+          <div className="text-[var(--text-muted)]">ยังไม่มีสินค้า</div>
           {/* ปุ่ม mock เผื่อทดสอบ flow ออเดอร์เร็วๆ */}
           <button
             className="px-3 py-2 rounded-2xl bg-blue-700 text-white"
@@ -149,20 +149,24 @@ export default function ItemsPage() {
           const status = order?.status;
 
           return (
-            <div key={itemId} className="rounded-2xl border border-white/10 p-4 bg-white/5 shadow-sm space-y-3">
+            <div key={itemId} className="h2h-card p-4 shadow-sm space-y-3">
               <div className="flex items-start gap-3">
-                <div className="w-20 h-20 rounded-xl bg-white/10 overflow-hidden flex items-center justify-center">
+                <div className="w-20 h-20 rounded-xl bg-black/5 dark:bg-white/10 overflow-hidden flex items-center justify-center">
                   {it.images?.[0] ? (
                     <img src={it.images[0]} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="material-icons-round">inventory_2</span>
+                    <span className="material-icons-round text-[var(--text-muted)]">inventory_2</span>
                   )}
                 </div>
                 <div className="flex-1">
-                  <div className="font-semibold text-lg">{it.title || it.name || "Untitled"}</div>
-                  <div className="text-sm text-[var(--fg-muted)]">฿ {Number(it.price ?? it.amount ?? 0) || 12000}</div>
-                  <div className="text-xs text-[var(--fg-muted)]">
-                    ผู้ขาย: {it?.seller?.name || it?.sellerId || it?.ownerId || "-"}
+                  <div className="font-semibold text-lg text-[var(--text-main)]">{it.title || it.name || "Untitled"}</div>
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <span className="text-sm text-[var(--text-accent)] font-medium">
+                      ฿ {Number(it.price ?? it.amount ?? 0).toLocaleString()}
+                    </span>
+                    <span className="text-xs text-[var(--text-muted)]">
+                      โดย {it?.seller?.name || it?.sellerName || it?.sellerId || "ไม่ระบุ"} ({it?.seller?.email || "-"})
+                    </span>
                   </div>
                 </div>
               </div>
@@ -177,16 +181,16 @@ export default function ItemsPage() {
               )}
 
               {order && (
-                <div className="rounded-xl border border-white/10 p-3 bg-white/5 space-y-2">
+                <div className="rounded-xl border border-[var(--glass-border)] p-3 bg-black/5 dark:bg-white/5 space-y-2">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm px-3 py-1 rounded-full bg-blue-100/10 text-blue-200">
+                    <span className="text-sm px-3 py-1 rounded-full bg-blue-100/50 text-blue-700 dark:bg-blue-100/10 dark:text-blue-200">
                       สถานะ: {status}
                     </span>
                     {order?._id && (
-                      <span className="text-xs text-[var(--fg-muted)]">Order ID: {order._id}</span>
+                      <span className="text-xs text-[var(--text-muted)]">Order ID: {order._id}</span>
                     )}
                     {order?.slip?.url && (
-                      <a href={order.slip.url} target="_blank" rel="noreferrer" className="text-sm underline">
+                      <a href={order.slip.url} target="_blank" rel="noreferrer" className="text-sm underline text-[var(--text-main)]">
                         ดูสลิป
                       </a>
                     )}
@@ -199,18 +203,18 @@ export default function ItemsPage() {
                         accept="image/*,application/pdf"
                         onChange={(e) => uploadSlip(itemId, e.target.files?.[0] || null)}
                       />
-                      <span className="text-xs text-[var(--fg-muted)]">แนบสลิปเพื่อยืนยันการชำระ</span>
+                      <span className="text-xs text-[var(--text-muted)]">แนบสลิปเพื่อยืนยันการชำระ</span>
                     </div>
                   )}
 
                   {status === "PAID_PENDING_VERIFY" && (
-                    <div className="text-sm text-amber-300">อัปสลิปแล้ว — รอผู้ขายยืนยันการชำระเงิน</div>
+                    <div className="text-sm text-amber-600 dark:text-amber-300">อัปสลิปแล้ว — รอผู้ขายยืนยันการชำระเงิน</div>
                   )}
                   {status === "PAID_VERIFIED" && (
-                    <div className="text-sm text-emerald-300">ผู้ขายยืนยันแล้ว — ผู้ซื้อสามารถกด Complete ได้จากหน้าออเดอร์</div>
+                    <div className="text-sm text-emerald-600 dark:text-emerald-300">ผู้ขายยืนยันแล้ว — ผู้ซื้อสามารถกด Complete ได้จากหน้าออเดอร์</div>
                   )}
                   {status === "COMPLETED" && (
-                    <div className="text-sm text-emerald-300">คำสั่งซื้อเสร็จสมบูรณ์ 🎉</div>
+                    <div className="text-sm text-emerald-600 dark:text-emerald-300">คำสั่งซื้อเสร็จสมบูรณ์ 🎉</div>
                   )}
                 </div>
               )}

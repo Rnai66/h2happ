@@ -55,16 +55,88 @@ function getSellerIdFromOrder(o) {
   );
 }
 
+// Import order number formatting from shared utility
+import { formatOrderNumber } from "../../utils/formatOrderNumber";
+
 export default function OrdersPage() {
   const nav = useNavigate();
   const [sp] = useSearchParams();
   const successFlag = sp.get("success");
 
   const [buyerOrders, setBuyerOrders] = useState([]);
-  const [sellerOrders, setSellerOrders] = useState([]);
+
   const [allOrders, setAllOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+
+  const [editingId, setEditingId] = useState(null);
+  const [editStatus, setEditStatus] = useState("");
+
+  const refreshOrders = async () => {
+    try {
+      setLoading(true);
+      const res = await api.get(`/orders?page=1&limit=50`);
+      const all = normalizeOrders(res);
+      const u = getUser();
+      const myId = u?._id || u?.id || u?.userId;
+
+      if (myId) {
+        const myBuyerOrders = all.filter((o) => {
+          const bid = getBuyerIdFromOrder(o);
+          return bid && String(bid) === String(myId);
+        });
+        const mySellerOrders = all.filter((o) => {
+          const sid = getSellerIdFromOrder(o);
+          return sid && String(sid) === String(myId);
+        });
+        setAllOrders(all);
+        setBuyerOrders(myBuyerOrders);
+        setSellerOrders(mySellerOrders);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("คุณต้องการลบคำสั่งซื้อนี้ใช่หรือไม่?")) return;
+    try {
+      await api.delete(`/orders/${id}`);
+      setAllOrders((prev) => prev.filter((o) => o._id !== id));
+      setBuyerOrders((prev) => prev.filter((o) => o._id !== id));
+
+      alert("ลบคำสั่งซื้อเรียบร้อยแล้ว");
+    } catch (e) {
+      alert(e.message || "ลบคำสั่งซื้อไม่สำเร็จ");
+    }
+  };
+
+  const startEdit = (order) => {
+    setEditingId(order._id);
+    setEditStatus(order.status || "pending");
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditStatus("");
+  };
+
+  const handleSaveStatus = async (id) => {
+    try {
+      await api.patch(`/orders/${id}/status`, { status: editStatus });
+      setEditingId(null);
+      // Update local state to reflect change without full reload
+      const updateLocal = (list) => list.map(o => o._id === id ? { ...o, status: editStatus } : o);
+      setAllOrders(updateLocal);
+      setBuyerOrders(updateLocal);
+
+      alert("อัปเดตสถานะเรียบร้อยแล้ว");
+    } catch (e) {
+      alert(e.message || "อัปเดตสถานะไม่สำเร็จ");
+    }
+  };
 
   useEffect(() => {
     const u = getUser();
@@ -95,14 +167,8 @@ export default function OrdersPage() {
           return bid && String(bid) === String(myId);
         });
 
-        const mySellerOrders = all.filter((o) => {
-          const sid = getSellerIdFromOrder(o);
-          return sid && String(sid) === String(myId);
-        });
-
         setAllOrders(all);
         setBuyerOrders(myBuyerOrders);
-        setSellerOrders(mySellerOrders);
       } catch (e) {
         setErr(e.message || "โหลดคำสั่งซื้อไม่สำเร็จ");
       } finally {
@@ -111,18 +177,32 @@ export default function OrdersPage() {
     })();
   }, [nav]);
 
+  const StatusSelect = () => (
+    <select
+      value={editStatus}
+      onChange={(e) => setEditStatus(e.target.value)}
+      className="bg-white dark:bg-black/50 border border-slate-300 dark:border-white/20 rounded px-2 py-1 text-xs text-slate-800 dark:text-white"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <option value="pending">Pending</option>
+      <option value="confirmed">Confirmed</option>
+      <option value="completed">Completed</option>
+      <option value="cancelled">Cancelled</option>
+    </select>
+  );
+
   return (
     <MainLayout>
       {/* 🔑 wrapper สำหรับหน้า orders */}
-      <div className="h2h-orders max-w-5xl mx-auto p-4 space-y-6">
+      <div className="h2h-orders max-w-6xl mx-auto p-4 space-y-6">
 
         {/* ===== Header ===== */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold text-[var(--text-main)] title-glow">
               คำสั่งซื้อของฉัน
             </h1>
-            <p className="text-sm text-white/70">
+            <p className="text-sm text-[var(--text-muted)]">
               ดูรายการที่คุณสั่งซื้อ และรายการที่คุณเป็นผู้ขาย
             </p>
           </div>
@@ -148,7 +228,7 @@ export default function OrdersPage() {
         )}
 
         {loading ? (
-          <div className="text-sm text-white/70">
+          <div className="text-sm text-[var(--text-muted)]">
             กำลังโหลดคำสั่งซื้อ...
           </div>
         ) : (
@@ -156,24 +236,24 @@ export default function OrdersPage() {
 
             {/* ── ฉันเป็นผู้ซื้อ ── */}
             <section>
-              <h2 className="text-lg font-semibold text-white mb-2">
+              <h2 className="text-lg font-semibold text-[var(--text-main)] mb-2">
                 ฉันเป็นผู้ซื้อ
               </h2>
 
               {buyerOrders.length === 0 ? (
-                <p className="text-sm text-white/65">
+                <p className="text-sm text-[var(--text-muted)]">
                   ยังไม่มีคำสั่งซื้อในฐานะผู้ซื้อ
                 </p>
               ) : (
                 <div className="overflow-x-auto rounded-xl
-                                border border-white/15
-                                bg-black/40 backdrop-blur">
+                                border border-[var(--glass-border)]
+                                h2h-card">
                   <table className="min-w-full text-sm">
-                    <thead className="bg-black/40">
+                    <thead className="bg-slate-200 dark:bg-black/40">
                       <tr>
-                        {["เลขคำสั่งซื้อ","สินค้า","ยอดเงิน","สถานะ","สร้างเมื่อ"].map(h => (
+                        {["เลขคำสั่งซื้อ", "สินค้า", "ยอดเงิน", "สถานะ", "จัดการ"].map(h => (
                           <th key={h}
-                              className="px-3 py-2 text-left text-xs font-semibold text-white/70">
+                            className="px-2 py-2 md:px-3 md:py-2 text-left text-[10px] md:text-xs font-semibold text-[var(--text-muted)]">
                             {h}
                           </th>
                         ))}
@@ -184,41 +264,68 @@ export default function OrdersPage() {
                         const amount = getAmount(o);
                         const payStatus = getPaymentStatus(o);
                         const statusText = o.status || o.orderStatus || "pending";
+                        const isEditing = editingId === o._id;
 
                         return (
                           <tr key={o._id}
-                              className="border-t border-white/10 hover:bg-white/5">
-                            <td className="px-3 py-2 font-mono text-xs text-white">
+                            className="border-t border-[var(--glass-border)] hover:bg-black/5 dark:hover:bg-white/5">
+                            <td className="px-2 py-2 md:px-3 md:py-2 font-mono text-[10px] md:text-xs text-[var(--text-main)]">
                               <Link
                                 to={`/orders/${o._id}`}
-                                className="text-blue-300 hover:underline">
-                                {o.orderNumber || o._id}
+                                className="text-blue-600 dark:text-blue-300 hover:underline">
+                                {formatOrderNumber(o.orderNumber, "buyer") || o._id}
                               </Link>
+                              <div className="text-[9px] md:text-[10px] text-[var(--text-muted)] mt-1">
+                                {formatDate(o.createdAt)}
+                              </div>
                             </td>
 
-                            <td className="px-3 py-2">
-                              <div className="text-white">
+                            <td className="px-2 py-2 md:px-3 md:py-2">
+                              <div className="text-[var(--text-main)] text-xs md:text-sm line-clamp-1 max-w-[120px] md:max-w-none">
                                 {o.itemSnapshot?.title || o.title || "–"}
                               </div>
-                              <div className="text-xs text-white/60">
-                                itemId: {o.itemId}
-                              </div>
                             </td>
 
-                            <td className="px-3 py-2 text-right text-yellow-300 font-medium">
+                            <td className="px-2 py-2 md:px-3 md:py-2 text-right text-[var(--text-accent)] font-medium text-xs md:text-sm">
                               ฿{Number(amount || 0).toLocaleString("th-TH")}
                             </td>
 
-                            <td className="px-3 py-2">
-                              <span className="inline-flex items-center rounded-full
-                                               border border-white/20 bg-black/40
-                                               px-2 py-0.5 text-xs text-white/80">
-                                {statusText} / {payStatus}
-                              </span>
+                            <td className="px-2 py-2 md:px-3 md:py-2">
+                              {isEditing ? (
+                                <StatusSelect />
+                              ) : (
+                                <span className={`inline-flex items-center rounded-full
+                                                   border px-1.5 py-0.5 md:px-2 text-[10px] md:text-xs
+                                                   ${statusText === 'completed' ? 'border-green-500/30 bg-green-500/10 text-green-600 dark:text-green-400' :
+                                    statusText === 'cancelled' ? 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400' :
+                                      'border-slate-300 dark:border-white/20 bg-slate-100 dark:bg-black/40 text-slate-700 dark:text-white/80'}`}>
+                                  {statusText} / {payStatus}
+                                </span>
+                              )}
                             </td>
 
-                            <td className="px-3 py-2 text-xs text-white/60">
-                              {formatDate(o.createdAt)}
+                            <td className="px-3 py-2">
+                              <div className="flex items-center gap-2">
+                                {isEditing ? (
+                                  <>
+                                    <button onClick={() => handleSaveStatus(o._id)} className="text-green-400 hover:text-green-300">
+                                      <span className="material-icons-round text-lg">save</span>
+                                    </button>
+                                    <button onClick={cancelEdit} className="text-slate-500 dark:text-white/60 hover:text-slate-700 dark:hover:text-white">
+                                      <span className="material-icons-round text-lg">close</span>
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button onClick={() => startEdit(o)} className="text-blue-400 hover:text-blue-300" title="แก้ไขสถานะ">
+                                      <span className="material-icons-round text-lg">edit</span>
+                                    </button>
+                                    <button onClick={() => handleDelete(o._id)} className="text-red-400 hover:text-red-300" title="ลบคำสั่งซื้อ">
+                                      <span className="material-icons-round text-lg">delete</span>
+                                    </button>
+                                  </>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         );
@@ -229,138 +336,10 @@ export default function OrdersPage() {
               )}
             </section>
 
-            {/* ── ฉันเป็นผู้ขาย ── */}
-            <section>
-              <h2 className="text-lg font-semibold text-white mb-2">
-                ฉันเป็นผู้ขาย
-              </h2>
 
-              {sellerOrders.length === 0 ? (
-                <p className="text-sm text-white/65">
-                  ยังไม่มีคำสั่งซื้อในฐานะผู้ขาย
-                </p>
-              ) : (
-                <div className="overflow-x-auto rounded-xl
-                                border border-white/15
-                                bg-black/40 backdrop-blur">
-                  <table className="min-w-full text-sm">
-                    <thead className="bg-black/40">
-                      <tr>
-                        {["เลขคำสั่งซื้อ","สินค้า","ยอดเงิน","ผู้ซื้อ","สถานะ"].map(h => (
-                          <th key={h}
-                              className="px-3 py-2 text-left text-xs font-semibold text-white/70">
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sellerOrders.map((o) => {
-                        const amount = getAmount(o);
-                        const payStatus = getPaymentStatus(o);
-                        const statusText = o.status || o.orderStatus || "pending";
-
-                        return (
-                          <tr key={o._id}
-                              className="border-t border-white/10 hover:bg-white/5">
-                            <td className="px-3 py-2 font-mono text-xs text-white">
-                              <Link
-                                to={`/orders/${o._id}`}
-                                className="text-blue-300 hover:underline">
-                                {o.orderNumber || o._id}
-                              </Link>
-                            </td>
-
-                            <td className="px-3 py-2">
-                              <div className="text-white">
-                                {o.itemSnapshot?.title || o.title || "–"}
-                              </div>
-                              <div className="text-xs text-white/60">
-                                itemId: {o.itemId}
-                              </div>
-                            </td>
-
-                            <td className="px-3 py-2 text-right text-yellow-300 font-medium">
-                              ฿{Number(amount || 0).toLocaleString("th-TH")}
-                            </td>
-
-                            <td className="px-3 py-2 text-xs text-white/70">
-                              buyerId: {getBuyerIdFromOrder(o) || "-"}
-                            </td>
-
-                            <td className="px-3 py-2">
-                              <span className="inline-flex items-center rounded-full
-                                               border border-white/20 bg-black/40
-                                               px-2 py-0.5 text-xs text-white/80">
-                                {statusText} / {payStatus}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
-
-            {/* ── Debug ── */}
-            <section>
-              <h2 className="text-sm font-semibold text-white/80 mb-1">
-                ทุกคำสั่งซื้อในระบบ (debug)
-              </h2>
-              <p className="text-xs text-white/50 mb-2">
-                ทั้งหมด: {allOrders.length} ออเดอร์
-              </p>
-
-              {allOrders.length > 0 && (
-                <div className="overflow-x-auto rounded-xl
-                                border border-white/10
-                                bg-black/30">
-                  <table className="min-w-full text-xs">
-                    <thead className="bg-black/40">
-                      <tr>
-                        {["id","item","buyerId","sellerId","status"].map(h => (
-                          <th key={h}
-                              className="px-2 py-1 text-left font-semibold text-white/60">
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allOrders.map((o) => (
-                        <tr key={`debug-${o._id}`}
-                            className="border-t border-white/10 hover:bg-white/5">
-                          <td className="px-2 py-1 font-mono">
-                            <Link
-                              to={`/orders/${o._id}`}
-                              className="text-blue-300 hover:underline">
-                              {o._id}
-                            </Link>
-                          </td>
-                          <td className="px-2 py-1 text-white/80">
-                            {o.itemSnapshot?.title || o.title || "–"}
-                          </td>
-                          <td className="px-2 py-1 text-white/60">
-                            {String(getBuyerIdFromOrder(o) || o.buyerId || "-")}
-                          </td>
-                          <td className="px-2 py-1 text-white/60">
-                            {String(getSellerIdFromOrder(o) || o.sellerId || "-")}
-                          </td>
-                          <td className="px-2 py-1 text-white/70">
-                            {o.status || o.orderStatus || "pending"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
           </div>
         )}
       </div>
-    </MainLayout>
+    </MainLayout >
   );
 }

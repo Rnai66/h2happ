@@ -3,495 +3,264 @@
 @tailwind utilities;
 
 /* =========================================================
-   TOKENS
-========================================================= */
-:root{
-  --h2h-blue:#2563EB;
-  --h2h-blueDark:#889ad6;
-  --h2h-gold:#D4AF37;
-  --h2h-ink:#355dba;
-  --ring: 0 0 0 3px rgba(37,99,235,.25);
-}
-
-html, body, #root { height: 100%; }
-
-/* =========================================================
-   BASE (อย่าบังคับสีหัวข้อให้มืด)
+   LIQUID GLASS THEME TOKENS
+   Inspired by: iOS blurred glass, natural light, premium silk.
 ========================================================= */
 @layer base {
-  html { line-height: 1.65; }
+  :root {
+    /* --- Light Mode (Cool Grey) --- */
+    --bg-app: #f8fafc;
+    /* slate-50 */
+    --bg-frame-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 
+    /* liquid balls / accents (subtle) */
+    --accent-glow: rgba(37, 99, 235, 0.1);
+    /* blue glow */
+
+    --glass-card: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(148, 163, 184, 0.4);
+    /* slate-400 */
+    --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+
+    --text-main: #1e293b;
+    /* slate-800 */
+    --text-muted: #475569;
+    /* slate-600 */
+    --text-accent: #2563eb;
+    /* blue-600 */
+
+    --h2h-blue: #2563EB;
+    --h2h-gold: #D4AF37;
+  }
+
+  .dark {
+    /* --- Dark Mode (Grey / Neutral) --- */
+    --bg-app: #1f1f1f;
+    --bg-frame-gradient: linear-gradient(145deg, #1f1f1f 0%, #2d2d2d 100%);
+
+    --accent-glow: rgba(100, 100, 100, 0.2);
+    /* grey glow */
+
+    --glass-card: rgba(45, 45, 45, 0.9);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+    --text-main: #f5f5f5;
+    /* neutral grey-50 */
+    --text-muted: #a3a3a3;
+    /* neutral grey-400 */
+    --text-accent: #10b981;
+    /* emerald-500 */
+  }
+
+  html,
   body {
-    background: #0f172a;        /* พื้นเข้มจริง */
-    color: #e5e7eb;             /* ตัวอักษรสว่าง */
+    height: 100%;
+    /* Start with variables */
+    background: var(--bg-app);
+    color: var(--text-main);
     font-family: "Prompt", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Sharp text rendering */
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
-  /* ❌ เอา text-slate-900 ออก */
-  h1,h2,h3,h4 {
-    @apply font-semibold;
-    line-height: 1.3;
-    color: inherit;
+  /* =========================================================
+     LIGHT MODE TEXT COLOR FIXES
+     Force white text to dark grey in Light Mode
+  ========================================================= */
+  :root:not(.dark) .text-white,
+  :root:not(.dark) .text-white\/70,
+  :root:not(.dark) .text-white\/80,
+  :root:not(.dark) .text-white\/60,
+  :root:not(.dark) .text-white\/50 {
+    color: var(--text-main) !important;
   }
 
-  a {
-    @apply underline-offset-2 hover:underline;
-    color: var(--h2h-gold);
+  :root:not(.dark) [class*="text-white/"] {
+    color: var(--text-muted) !important;
+  }
+
+  /* Specific overrides for semi-transparent white text */
+  :root:not(.dark) .text-white\/70,
+  :root:not(.dark) .text-white\/60,
+  :root:not(.dark) .text-white\/50 {
+    color: var(--text-muted) !important;
   }
 }
 
 /* =========================================================
-   FRAME + BACKGROUND (ลดลายรบกวนสายตา)
+   COMPONENTS
 ========================================================= */
 @layer components {
+
+  /* Elephant Animation */
+  @keyframes elephant-patrol {
+    0% {
+      transform: translateX(0) scaleX(-1);
+    }
+
+    45% {
+      transform: translateX(120px) scaleX(-1);
+    }
+
+    50% {
+      transform: translateX(120px) scaleX(1);
+    }
+
+    95% {
+      transform: translateX(0) scaleX(1);
+    }
+
+    100% {
+      transform: translateX(0) scaleX(-1);
+    }
+  }
+
+  @keyframes rainbow-glow {
+    0% {
+      filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.8));
+    }
+
+    15% {
+      filter: drop-shadow(0 0 5px rgba(255, 165, 0, 0.8));
+    }
+
+    30% {
+      filter: drop-shadow(0 0 5px rgba(255, 255, 0, 0.8));
+    }
+
+    45% {
+      filter: drop-shadow(0 0 5px rgba(0, 128, 0, 0.8));
+    }
+
+    60% {
+      filter: drop-shadow(0 0 5px rgba(0, 0, 255, 0.8));
+    }
+
+    75% {
+      filter: drop-shadow(0 0 5px rgba(75, 0, 130, 0.8));
+    }
+
+    100% {
+      filter: drop-shadow(0 0 5px rgba(238, 130, 238, 0.8));
+    }
+  }
+
+  .elephant-anim {
+    display: inline-block;
+    animation:
+      elephant-patrol 8s 1 ease-in-out forwards,
+      rainbow-glow 8s 1 linear forwards;
+    position: relative;
+    z-index: 10;
+    will-change: transform, filter;
+  }
+
+  /* Frame: The outer wrapper */
   .h2h-frame {
     min-height: 100vh;
     padding: 8px;
-    border-radius: 16px;
-    background: linear-gradient(
-      145deg,
-      #665b2a 0%,
-      #7a6c33 40%,
-      #8b7a3a 70%,
-      #9a8740 100%
-    );
-    box-shadow: 0 0 12px rgba(0,0,0,.35);
+    /* mobile default */
+    background: var(--bg-frame-gradient);
+    transition: background 0.5s ease;
   }
 
+  @media (min-width: 768px) {
+    .h2h-frame {
+      padding: 16px;
+    }
+  }
+
+  /* Inner Content Area */
   .h2h-frame-inner {
-    min-height: 100vh;
+    min-height: 90vh;
+    border-radius: 20px;
+    /* Optional: extra nested glass level */
+  }
+
+  /* Liquid Card */
+  .h2h-card {
+    background: var(--glass-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--glass-shadow);
+    color: var(--text-main);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+  }
+
+  /* Input Fields */
+  .h2h-input {
+    width: 100%;
+    padding: 10px 14px;
     border-radius: 12px;
-    background: linear-gradient(
-      180deg,
-      rgba(2,6,23,.96),
-      rgba(2,6,23,.92)
-    );
-    color: #e5e7eb;
+    border: 1px solid #94a3b8;
+    /* slate-400 for visible border */
+    background: #ffffff;
+    /* Solid white for contrast */
+    color: #000000;
+    /* Pure black text */
+    transition: all 0.2s;
+  }
+
+  .dark .h2h-input {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+
+  .h2h-input:focus {
+    outline: none;
+    border-color: var(--h2h-blue);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  }
+
+  /* Buttons */
+  .h2h-btn {
+    @apply px-4 py-2 rounded-xl text-white font-medium active:scale-[0.98] transition-transform;
+    background: linear-gradient(135deg, var(--h2h-blue), var(--h2h-gold));
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+
+  /* Title Glow */
+  .title-glow {
+    color: var(--text-main);
+    text-shadow: 0 2px 10px var(--accent-glow);
   }
 }
 
 /* =========================================================
-   CARD
+   CHAT
 ========================================================= */
-@layer components {
-  .h2h-card{
-    background: rgba(2,6,23,.72);
-    border: 1px solid rgba(148,163,184,.18);
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0,0,0,.35);
-    backdrop-filter: blur(4px);
-    color: #e5e7eb;
-  }
+.h2h-chat .chat-bubble-me {
+  background: var(--h2h-blue);
+  color: white;
+  border-radius: 16px 16px 2px 16px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.h2h-chat .chat-bubble-other {
+  background: var(--glass-card);
+  border: 1px solid var(--glass-border);
+  color: var(--text-main);
+  border-radius: 16px 16px 16px 2px;
 }
 
 /* =========================================================
-   BUTTONS
-========================================================= */
-@layer components {
-  .h2h-btn{
-    @apply px-4 py-2 rounded-xl text-white transition active:scale-[.98];
-    background: linear-gradient(
-      135deg,
-      var(--h2h-blue),
-      var(--h2h-gold)
-    );
-  }
-
-  .h2h-btn-ghost{
-    @apply px-4 py-2 rounded-xl border text-slate-200;
-    border-color: rgba(229,231,235,.22);
-  }
-}
-
-/* =========================================================
-   INPUT
-========================================================= */
-@layer components {
-  .h2h-input{
-    @apply w-full rounded-xl border px-3 py-2 bg-white text-slate-900;
-    border-color: rgba(148,163,184,.35);
-  }
-}
-
-/* =========================================================
-   TITLE BAR (แก้ปัญหาหลัก)
-========================================================= */
-@layer components {
-  .h2h-titlebar{
-    margin-bottom: 16px;
-    padding: 14px 16px;
-    border-radius: 16px;
-    background: linear-gradient(
-      180deg,
-      rgba(2,6,23,.88),
-      rgba(2,6,23,.68)
-    );
-    border: 1px solid rgba(148,163,184,.25);
-    backdrop-filter: blur(8px);
-  }
-
-  .h2h-titlebar h1,
-  .h2h-titlebar .h2h-title{
-    color: #ffffff !important;
-    font-weight: 800;
-    font-size: clamp(20px, 4.8vw, 26px);
-    letter-spacing: -0.02em;
-    text-shadow: 0 3px 18px rgba(0,0,0,.55);
-  }
-
-  .h2h-titlebar p,
-  .h2h-subtitle{
-    margin-top: 4px;
-    color: rgba(226,232,240,.85) !important;
-    font-size: 14px;
-  }
-}
-
-/* accent ใต้ title */
-.h2h-title::after{
-  content:"";
-  display:block;
-  width:52px;
-  height:3px;
-  margin-top:6px;
-  border-radius:999px;
-  background: linear-gradient(
-    90deg,
-    var(--h2h-blue),
-    var(--h2h-gold)
-  );
-}
-/* ===== FIX TEXT VISIBILITY: H2H Thailand – สินค้าล่าสุด ===== */
-.h2h-hero-title{
-  color: #c7afaf !important;
-  font-weight: 800 !important;
-  font-size: clamp(22px, 5vw, 28px);
-  line-height: 1.25;
-  letter-spacing: -0.02em;
-
-  /* ตัดปัญหาพื้นหลังรบกวน */
-  background: linear-gradient(
-    180deg,
-    rgba(2,6,23,.85),
-    rgba(2,6,23,.65)
-  );
-  padding: 10px 14px;
-  border-radius: 14px;
-
-  /* ทำให้ตัวอักษรลอย อ่านชัด */
-  text-shadow:
-    0 2px 8px rgba(234, 139, 139, 0.952),
-    0 6px 20px rgba(0,0,0,.45);
-
-  display: inline-block;
-}
-/* ===== ABSOLUTE FIX: HERO TITLE VISIBILITY ===== */
-.h2h-hero-title{
-  /* ตัวอักษร */
-  color: #ffffff !important;
-  font-weight: 900 !important;
-  font-size: clamp(22px, 5.6vw, 30px);
-  line-height: 1.2;
-  letter-spacing: -0.03em;
-
-  /* 🔴 พื้นหลังทึบ (ตัวชนะเกม) */
-  background-color: rgba(170, 174, 190, 0.127)!important;
-
-  /* กล่อง */
-  padding: 12px 16px;
-  border-radius: 16px;
-  display: inline-block;
-
-  /* เส้นขอบบาง ช่วยตัดกับพื้น */
-  border: 1px solid rgba(255, 255, 255, 0.12);
-
-  /* เงาตัวอักษร + เงากล่อง */
-  text-shadow:
-    0 2px 6px rgba(0,0,0,.75),
-    0 6px 18px rgba(0,0,0,.65);
-
-  box-shadow:
-    0 10px 30px rgba(0,0,0,.55),
-    inset 0 1px 0 rgba(255,255,255,.04);
-}
-.h2h-hero-title{
-  isolation: isolate;
-}
-/* =========================================================
-   CHAT VISIBILITY FIX (Text + Bubble + Input)
-========================================================= */
-
-/* กล่องข้อความแชต (รวม) */
-.chat-area,
-.chat-list,
-.chat-room {
-  color: #e5e7eb; /* slate-200 */
-}
-
-/* ===== ข้อความฝั่งเรา ===== */
-.chat-bubble-me {
-  background-color: #2563eb !important;   /* blue-600 */
-  color: #ffffff !important;
-  font-weight: 500;
-  border-radius: 16px;
-  padding: 10px 14px;
-  max-width: 78%;
-  box-shadow: 0 6px 18px rgba(0,0,0,.35);
-}
-
-/* ===== ข้อความฝั่งคู่สนทนา ===== */
-.chat-bubble-other {
-  background-color: rgba(15,23,42,0.95) !important; /* slate-900 */
-  color: #f8fafc !important; /* slate-50 */
-  font-weight: 500;
-  border-radius: 16px;
-  padding: 10px 14px;
-  max-width: 78%;
-  box-shadow: 0 6px 18px rgba(0,0,0,.35);
-}
-
-/* ===== ข้อความใน bubble ===== */
-.chat-bubble-me p,
-.chat-bubble-other p {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.55;
-  letter-spacing: -0.01em;
-}
-
-/* ===== เวลา / meta ===== */
-.chat-meta {
-  margin-top: 4px;
-  font-size: 11px;
-  color: rgba(226,232,240,.75);
-}
-
-/* ===== ช่องพิมพ์ข้อความ ===== */
-.chat-input {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  font-size: 15px;
-  border-radius: 999px;
-  padding: 10px 14px;
-  border: 1px solid rgba(148,163,184,.35);
-}
-
-/* placeholder */
-.chat-input::placeholder {
-  color: #64748b !important;
-  opacity: 1;
-}
-
-/* focus */
-.chat-input:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(37,99,235,.35);
-  border-color: #2563eb;
-}
-/* =========================================================
-   H2H CHAT — FONT + CONTRAST FIX (PUT AT VERY END)
-========================================================= */
-.h2h-chat, .h2h-chat *{
-  font-family: "Prompt","Sarabun","Noto Sans Thai",system-ui,sans-serif !important;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-/* ตัวหนังสือรวมในหน้าแชท */
-.h2h-chat{
-  color: #f8fafc !important; /* slate-50 */
-}
-
-/* หัวข้อ/ชื่อห้อง/ชื่อคน */
-.h2h-chat h1, .h2h-chat h2, .h2h-chat h3,
-.h2h-chat .chat-title, .h2h-chat .chat-name{
-  color: #ffffff !important;
-  font-weight: 800 !important;
-  text-shadow: 0 2px 10px rgba(0,0,0,.45);
-}
-
-/* รายการแชท (chat list item) */
-.h2h-chat .chat-item,
-.h2h-chat .chat-row{
-  background: rgba(2,6,23,.62) !important;
-  border: 1px solid rgba(148,163,184,.18) !important;
-  color: #f8fafc !important;
-}
-
-/* preview/snippet ใน list */
-.h2h-chat .chat-snippet,
-.h2h-chat .chat-preview{
-  color: rgba(226,232,240,.85) !important; /* slate-200 */
-}
-
-/* เวลา/สถานะ อ่านง่าย */
-.h2h-chat .chat-time,
-.h2h-chat .chat-meta{
-  color: rgba(226,232,240,.70) !important;
-  font-size: 12px !important;
-}
-
-/* ===== bubble: ฝั่งเรา ===== */
-.h2h-chat .chat-bubble-me{
-  background: #2563eb !important; /* blue-600 */
-  color: #ffffff !important;
-  font-weight: 600 !important;
-  border: 1px solid rgba(255,255,255,.12) !important;
-}
-
-/* ===== bubble: ฝั่งเขา ===== */
-.h2h-chat .chat-bubble-other{
-  background: rgba(2,6,23,.92) !important;
-  color: #ffffff !important;
-  font-weight: 600 !important;
-  border: 1px solid rgba(148,163,184,.22) !important;
-}
-
-/* ตัวข้อความใน bubble */
-.h2h-chat .chat-bubble-me,
-.h2h-chat .chat-bubble-other{
-  font-size: 15.5px !important;
-  line-height: 1.6 !important;
-  letter-spacing: -0.01em;
-  border-radius: 16px;
-  padding: 10px 14px;
-  max-width: 78%;
-  box-shadow: 0 10px 24px rgba(0,0,0,.35);
-}
-
-/* ===== ช่องพิมพ์ข้อความ (input/textarea) ===== */
-.h2h-chat input,
-.h2h-chat textarea{
-  background: #ffffff !important;
-  color: #0f172a !important;
-  font-weight: 600 !important;
-  border: 1px solid rgba(148,163,184,.35) !important;
-  border-radius: 999px !important;
-}
-
-.h2h-chat textarea{
-  border-radius: 18px !important; /* เผื่อใช้ textarea */
-}
-
-.h2h-chat input::placeholder,
-.h2h-chat textarea::placeholder{
-  color: #475569 !important; /* slate-600 */
-  opacity: 1 !important;
-  font-weight: 500 !important;
-}
-
-.h2h-chat input:focus,
-.h2h-chat textarea:focus{
-  outline: none !important;
-  box-shadow: 0 0 0 4px rgba(37,99,235,.25) !important;
-  border-color: rgba(37,99,235,.65) !important;
-}
-
-/* กัน parent blend/opacity ทำให้กลืน */
-.h2h-chat{
-  isolation: isolate;
-}
-/* =========================================================
-   PRINT LAYOUT — Order Detail
+   PRINT
 ========================================================= */
 @media print {
-
-  /* ===== Page setup ===== */
-  @page {
-    size: A4;              /* ค่าเริ่มต้น */
-    margin: 12mm;
-  }
-
-  html, body {
-    background: #ffffff !important;
-    color: #000000 !important;
-    font-size: 11pt;
-    line-height: 1.45;
-  }
-
-  /* ===== ซ่อนสิ่งที่ไม่จำเป็น ===== */
-  header,
-  footer,
-  nav,
-  .h2h-bottom-nav,
-  .no-print,
-  button,
-  .shadow-silk {
+  .no-print {
     display: none !important;
   }
 
-  /* ===== Container หลัก ===== */
-  .h2h-orders {
-    max-width: 100% !important;
-    padding: 0 !important;
-  }
-
-  /* ===== Card → กล่องกระดาษ ===== */
   .h2h-card {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border: 1px solid #d1d5db !important;
-    box-shadow: none !important;
-    break-inside: avoid;
-  }
-
-  /* ===== หัวข้อ ===== */
-  h1, h2, h3 {
-    color: #000000 !important;
-    page-break-after: avoid;
-  }
-
-  /* ===== ข้อความ ===== */
-  p, span, div {
-    color: #000000 !important;
-  }
-
-  /* ===== ตาราง ===== */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 10pt;
-  }
-  th, td {
-    border: 1px solid #d1d5db;
-    padding: 6px;
-    text-align: left;
-  }
-  th {
-    background: #f3f4f6;
-    font-weight: 600;
-  }
-
-  /* ===== ราคา ===== */
-  .price,
-  .text-yellow-300 {
-    color: #000000 !important;
-    font-weight: 700;
-  }
-
-  /* ===== สถานะ ===== */
-  .status-pill,
-  .inline-flex {
-    border: 1px solid #9ca3af !important;
-    background: #f9fafb !important;
-    color: #000000 !important;
-  }
-
-  /* ===== รูปสินค้า ===== */
-  img {
-    max-width: 80mm;
-    max-height: 80mm;
-    object-fit: contain;
-    border: 1px solid #d1d5db;
-  }
-
-  /* ===== ลิงก์ ===== */
-  a {
-    color: #000000 !important;
-    text-decoration: none;
-  }
-  a::after {
-    content: " (" attr(href) ")";
-    font-size: 9pt;
+    box-shadow: none;
+    border: 1px solid #ccc;
+    background: white;
+    color: black;
   }
 }

@@ -128,15 +128,36 @@ export default function ItemDetail() {
 
         <p className="text-sm text-slate-700">{item.description}</p>
 
-        {/* ข้อมูลผู้ขายแบบง่าย */}
-        <div className="p-3 rounded-xl bg-slate-50 text-xs text-slate-600">
-          <p>
-            ผู้ขาย:{" "}
-            <span className="font-semibold text-slate-900">
-              {item.sellerName || "ไม่ระบุ"}
-            </span>
+        {/* ข้อมูลผู้ขาย (Name / Email / Tel) */}
+        <div className="p-3 rounded-xl bg-slate-50 text-xs text-slate-600 border border-slate-200">
+          <p className="font-semibold text-slate-900 text-sm mb-1">
+            ข้อมูลผู้ขาย
           </p>
-          <p>sellerId: {String(item.sellerId || "")}</p>
+          {typeof item.sellerId === "object" && item.sellerId !== null ? (
+            <div className="flex flex-col gap-1">
+              <div>
+                <span className="font-medium text-slate-700">ชื่อ:</span> {item.sellerId.name || item.sellerName || "-"}
+              </div>
+              <div className="flex flex-wrap gap-3 text-slate-500">
+                <span>📧 {item.sellerId.email || "-"}</span>
+                <span>📞 {item.sellerId.phone || "-"}</span>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-1">
+                ID: {item.sellerId._id}
+              </div>
+            </div>
+          ) : (
+            // Fallback กรณีไม่ได้ populate หรือเป็นของเก่า
+            <div>
+              <p>
+                ผู้ขาย:{" "}
+                <span className="font-semibold text-slate-900">
+                  {item.sellerName || "ไม่ระบุ"}
+                </span>
+              </p>
+              <p>ID: {String(item.sellerId || "")}</p>
+            </div>
+          )}
         </div>
 
         {/* แจ้ง error กรณีสร้าง order ไม่สำเร็จ */}
@@ -154,24 +175,11 @@ export default function ItemDetail() {
           buyerId={buyerId}
           sellerId={sellerId}
           itemId={item._id}
+          price={item.price}
           onCreateOrder={handleCreateOrderFromChat}
         />
 
-        {/* ปุ่ม fallback (เผื่ออยากให้มี "เปิดคำสั่งซื้อ" แยกด้านล่างอีกปุ่ม) */}
-        <div className="mt-2 flex justify-end">
-          <button
-            type="button"
-            onClick={handleCreateOrderFromChat}
-            disabled={
-              creatingOrder || !token || !buyerId || !sellerId || !item._id
-            }
-            className="px-4 py-2 rounded-xl text-sm font-semibold
-                       bg-emerald-600 text-white hover:bg-emerald-700
-                       disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {creatingOrder ? "กำลังสร้างคำสั่งซื้อ…" : "เปิดคำสั่งซื้อจากแชตนี้"}
-          </button>
-        </div>
+
       </div>
     </MainLayout>
   );

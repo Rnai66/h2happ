@@ -32,7 +32,7 @@ export function OrderModel(conn) {
 
       paymentStatus: {
         type: String,
-        enum: ["unpaid", "paid", "refunded"],
+        enum: ["unpaid", "pending_verification", "paid", "refunded"],
         default: "unpaid",
         index: true,
       },
@@ -40,6 +40,9 @@ export function OrderModel(conn) {
       // soft delete
       isDeleted: { type: Boolean, default: false, index: true },
       deletedAt: { type: Date, default: null },
+
+      // ✅ Proof of Payment (Slip)
+      proofOfPayment: { type: String, default: "" },
     },
     { timestamps: true }
   );

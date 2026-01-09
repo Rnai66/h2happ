@@ -1,32 +1,32 @@
-:root{
-  --h2h-blue:#2563EB;
-  --h2h-blueDark:#1E40AF;
-  --h2h-gold:#D4AF37;
+:root {
+  --h2h-blue: #2563EB;
+  --h2h-blueDark: #1E40AF;
+  --h2h-gold: #D4AF37;
 
-  --bg0:#070B14;
-  --bg1:#0B1226;
+  --bg0: #070B14;
+  --bg1: #0B1226;
 
-  --card-dark: rgba(255,255,255,.08);
-  --card-dark-2: rgba(255,255,255,.12);
-  --stroke-dark: rgba(255,255,255,.14);
+  --card-dark: rgba(255, 255, 255, .08);
+  --card-dark-2: rgba(255, 255, 255, .12);
+  --stroke-dark: rgba(255, 255, 255, .14);
 
-  --text-strong:#ffffff;
-  --text:#f8fafc;
-  --muted: rgba(226,232,240,.75);
+  --text-strong: #ffffff;
+  --text: #f8fafc;
+  --muted: rgba(226, 232, 240, .75);
 }
 
 /* ===== App Background ===== */
-.h2h-bg{
+.h2h-bg {
   background:
-    radial-gradient(1000px 600px at 20% -10%, rgba(37,99,235,.35), transparent 60%),
-    radial-gradient(900px 600px at 90% 10%, rgba(212,175,55,.25), transparent 55%),
+    radial-gradient(1000px 600px at 20% -10%, rgba(37, 99, 235, .35), transparent 60%),
+    radial-gradient(900px 600px at 90% 10%, rgba(212, 175, 55, .25), transparent 55%),
     linear-gradient(180deg, var(--bg0), var(--bg1));
   color: var(--text);
   min-height: 100vh;
 }
 
 /* ===== Card (Dark – ใช้กับ Chat / หน้ามืด) ===== */
-.h2h-card{
+.h2h-card {
   background: linear-gradient(180deg, var(--card-dark), var(--card-dark-2));
   border: 1px solid var(--stroke-dark);
   backdrop-filter: blur(10px);
@@ -35,84 +35,107 @@
 }
 
 /* ===== Optional: Card แบบขาว (ถ้าจำเป็นจริง ๆ) ===== */
-.h2h-card-light{
+.h2h-card-light {
   background: #ffffff;
   color: #0f172a;
   border: 1px solid rgba(15, 23, 42, 0.08);
   box-shadow:
-    0 1px 2px rgba(0,0,0,.04),
-    0 6px 20px rgba(15,23,42,.06);
+    0 1px 2px rgba(0, 0, 0, .04),
+    0 6px 20px rgba(15, 23, 42, .06);
 }
 
 /* ===== Buttons ===== */
-.h2h-btn{
-  background: linear-gradient(135deg, rgba(37,99,235,.95), rgba(212,175,55,.55));
-  border: 1px solid rgba(255,255,255,.12);
+.h2h-btn {
+  background: linear-gradient(135deg, rgba(37, 99, 235, .95), rgba(212, 175, 55, .55));
+  border: 1px solid rgba(255, 255, 255, .12);
   color: #fff;
 }
-.h2h-btn:active{ transform: translateY(1px); }
 
-.h2h-btn-ghost{
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.14);
+.h2h-btn:active {
+  transform: translateY(1px);
+}
+
+.h2h-btn-ghost {
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .14);
   color: var(--text);
 }
 
 /* ===== Input (force readable) ===== */
-.h2h-input{
+.h2h-input {
   background: #ffffff;
   color: #0f172a;
-  border: 1px solid rgba(148,163,184,.35);
+  border: 1px solid rgba(148, 163, 184, .35);
 }
-.h2h-input::placeholder{
+
+.h2h-input::placeholder {
   color: #64748b;
 }
-.h2h-input:focus{
-  border-color: rgba(37,99,235,.60);
-  box-shadow: 0 0 0 4px rgba(37,99,235,.15);
+
+.h2h-input:focus {
+  border-color: rgba(37, 99, 235, .60);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, .15);
 }
 
 /* =========================================================
    CHAT FIX — ตัวอักษรชัดทั้งหมด
 ========================================================= */
-.h2h-chat{
-  color: var(--text-strong);
-  font-family: "Prompt","Sarabun","Noto Sans Thai",system-ui,sans-serif;
+.h2h-chat {
+  color: var(--text-main, #1e293b);
+  font-family: "Prompt", "Sarabun", "Noto Sans Thai", system-ui, sans-serif;
   isolation: isolate;
 }
 
 /* รายการแชท */
 .h2h-chat p,
 .h2h-chat span,
-.h2h-chat div{
-  color: var(--text);
+.h2h-chat div {
+  color: var(--text-main, #1e293b);
+}
+
+/* ===== Light Mode specific for h2h-chat ===== */
+:root:not(.dark) .h2h-chat,
+:root:not(.dark) .h2h-chat p,
+:root:not(.dark) .h2h-chat span,
+:root:not(.dark) .h2h-chat div,
+:root:not(.dark) .h2h-chat h1 {
+  color: #1e293b !important;
 }
 
 /* bubble */
-.chat-bubble-me{
-  background:#2563eb;
-  color:#ffffff;
-  font-weight:600;
+.chat-bubble-me {
+  background: #2563eb;
+  color: #ffffff !important;
+  font-weight: 600;
 }
-.chat-bubble-other{
-  background:rgba(2,6,23,.95);
-  color:#ffffff;
-  font-weight:600;
+
+.chat-bubble-other {
+  background: #ffffff;
+  color: #1e293b !important;
+  font-weight: 600;
+  border: 1px solid #e2e8f0;
+}
+
+/* Dark mode bubbles */
+.dark .chat-bubble-other {
+  background: rgba(2, 6, 23, .95);
+  color: #ffffff !important;
+  border: none;
 }
 
 /* bubble common */
 .chat-bubble-me,
-.chat-bubble-other{
-  padding:10px 14px;
-  border-radius:16px;
-  max-width:78%;
-  line-height:1.6;
-  box-shadow:0 8px 22px rgba(0,0,0,.45);
+.chat-bubble-other {
+  padding: 10px 14px;
+  border-radius: 16px;
+  max-width: 78%;
+  line-height: 1.6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
 }
 
 /* meta / time */
-.chat-meta{
-  font-size:11px;
-  color:var(--muted);
-  margin-top:4px;
+.chat-meta {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 4px;
 }

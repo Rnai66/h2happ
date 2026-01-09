@@ -55,7 +55,7 @@ export default function PayButton({
           console.error("No approveUrl from PayPal:", res);
           alert(
             "ไม่พบลิงก์ชำระเงินของ PayPal\n" +
-              "ลองดูรายละเอียดเพิ่มใน Console (DevTools)"
+            "ลองดูรายละเอียดเพิ่มใน Console (DevTools)"
           );
           return;
         }
@@ -65,14 +65,14 @@ export default function PayButton({
         return;
       }
 
-      // 🔹 Mock flow (cash / transfer / promptpay / card)
+      // 🔹 Real flow (Manual Confirm)
       const payload = { orderId, method };
       if (typeof amount === "number") {
         payload.amount = amount;
       }
 
-      const res = await api.post("/pay/mock", payload);
-      console.log("mock pay result:", res);
+      const res = await api.post("/pay/confirm", payload);
+      console.log("pay confirm result:", res);
 
       if (res?.order && typeof onPaid === "function") {
         onPaid(res.order);
@@ -80,7 +80,7 @@ export default function PayButton({
         onPaid(res);
       }
 
-      alert("✅ บันทึกการชำระเงิน (โหมดทดลอง) เรียบร้อย");
+      alert("✅ บันทึกการแจ้งชำระเงินเรียบร้อย กรุณารอการตรวจสอบ");
     } catch (err) {
       console.error("pay error:", err);
 
@@ -91,7 +91,7 @@ export default function PayButton({
       if (status && data) {
         alert(
           `ชำระเงินไม่สำเร็จ (${status})\n` +
-            (data.message || JSON.stringify(data, null, 2))
+          (data.message || JSON.stringify(data, null, 2))
         );
       } else {
         alert(err?.message || "ชำระเงินไม่สำเร็จ");

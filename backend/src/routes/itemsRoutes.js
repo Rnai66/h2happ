@@ -167,7 +167,7 @@ router.get("/:id([0-9a-fA-F]{24})", async (req, res, next) => {
     const item = await Item.findOne({
       _id: req.params.id,
       isDeleted: { $ne: true },
-    });
+    }).populate("sellerId", "name email phone");
 
     if (!item) {
       return res.status(404).json({ ok: false, error: "not_found" });

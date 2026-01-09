@@ -1,9 +1,11 @@
 // src/pages/auth/AuthCombined.jsx
 import { useMemo, useState } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
+import { useGoogleLogin } from "@react-oauth/google";
 import MainLayout from "../../layouts/MainLayout";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
+import { toast } from "react-hot-toast";
 
 // 🔐 ใช้ AuthContext แทนเรียก api ตรง ๆ
 import { useAuth } from "../../context/AuthContext";
@@ -17,7 +19,20 @@ export default function AuthCombined() {
   };
 
   const nav = useNavigate();
-  const { login, register } = useAuth();
+  const { login, register, googleLogin: authGoogleLogin } = useAuth();
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        await authGoogleLogin(tokenResponse.access_token);
+        nav("/items");
+      } catch (err) {
+        console.error(err);
+        toast.error("Google Login ไม่สำเร็จ");
+      }
+    },
+    onError: () => toast.error("Google Login ไม่สำเร็จ"),
+  });
 
   // --- Login state ---
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
@@ -124,21 +139,19 @@ export default function AuthCombined() {
             <div className="grid grid-cols-2">
               <button
                 onClick={() => setTab("login")}
-                className={`py-3 text-center text-sm font-medium rounded-tl-2xl ${
-                  tab === "login"
-                    ? "bg-brand-blue text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                }`}
+                className={`py-3 text-center text-sm font-medium rounded-tl-2xl ${tab === "login"
+                  ? "bg-brand-blue text-white"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
               >
                 เข้าสู่ระบบ
               </button>
               <button
                 onClick={() => setTab("register")}
-                className={`py-3 text-center text-sm font-medium rounded-tr-2xl ${
-                  tab === "register"
-                    ? "bg-brand-blue text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                }`}
+                className={`py-3 text-center text-sm font-medium rounded-tr-2xl ${tab === "register"
+                  ? "bg-brand-blue text-white"
+                  : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
               >
                 สมัครสมาชิก
               </button>
@@ -172,6 +185,25 @@ export default function AuthCombined() {
                   )}
                   <Button disabled={loginBusy} className="w-full">
                     {loginBusy ? "กำลังเข้าสู่ระบบ…" : "เข้าสู่ระบบ"}
+                  </Button>
+
+                  <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-slate-200"></span>
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white px-2 text-slate-500">หรือ</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="tonal"
+                    className="w-full !bg-white !text-slate-700 !border-slate-200 hover:!bg-slate-50"
+                    icon="google"
+                    type="button"
+                    onClick={() => handleGoogleLogin()}
+                  >
+                    ดำเนินการต่อด้วย Google
                   </Button>
                   <p className="text-sm text-slate-600 text-center">
                     ยังไม่มีบัญชี?{" "}
@@ -218,10 +250,9 @@ export default function AuthCombined() {
                     />
                     <div className="mt-2 h-2 bg-slate-200 rounded-full overflow-hidden">
                       <div
-                        className={`h-full ${
-                          ["w-1/4", "w-2/4", "w-3/4", "w-full"][strength - 1] ||
+                        className={`h-full ${["w-1/4", "w-2/4", "w-3/4", "w-full"][strength - 1] ||
                           "w-0"
-                        } bg-brand-blue transition`}
+                          } bg-brand-blue transition`}
                       />
                     </div>
                     <p className="text-xs text-slate-500 mt-1">
@@ -243,6 +274,25 @@ export default function AuthCombined() {
 
                   <Button disabled={regBusy} className="w-full">
                     {regBusy ? "กำลังสร้าง…" : "สมัครสมาชิก"}
+                  </Button>
+
+                  <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-slate-200"></span>
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white px-2 text-slate-500">หรือ</span>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="tonal"
+                    className="w-full !bg-white !text-slate-700 !border-slate-200 hover:!bg-slate-50"
+                    icon="google"
+                    type="button"
+                    onClick={() => handleGoogleLogin()}
+                  >
+                    สมัครด้วย Google
                   </Button>
                   <p className="text-sm text-slate-600 text-center">
                     มีบัญชีแล้ว?{" "}

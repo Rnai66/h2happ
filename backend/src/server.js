@@ -22,6 +22,9 @@ import paypalRoutes from "./routes/paypal.js";
 import paypalWebhookRoutes from "./routes/paypalWebhook.js";
 import uploadRoutes from "./routes/upload.js";
 import aiRoutes from "./routes/ai.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js"; // 🆕
+import adminRoutes from "./routes/adminRoutes.js"; // 🆕 Admin CRUD
+import notificationRoutes from "./routes/notificationRoutes.js"; // 🆕 Notifications
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -71,6 +74,9 @@ app.use("/api/pay", payRoutes);
 // profile + token
 app.use("/api/profile", profileRoutes);
 app.use("/api/token", tokenRewardRoutes);
+app.use("/api/dashboard", dashboardRoutes); // 🆕
+app.use("/api/admin", adminRoutes); // 🆕 Admin CRUD
+app.use("/api/notifications", notificationRoutes); // 🆕 Notifications
 
 // Redirect old /items → /api/items
 app.get("/items", (req, res) => {

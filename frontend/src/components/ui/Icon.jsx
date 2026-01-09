@@ -11,6 +11,7 @@ export default function Icon({ name, size=20, stroke=1.8, className='', ...props
     case 'cart':       return (<svg {...common} {...props}><path d="M6 6h14l-1.5 9H8z"/><circle cx="8" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg>);
     case 'heart':      return (<svg {...common} {...props}><path d="M20.8 8.6a5.5 5.5 0 00-9.8-3.8A5.5 5.5 0 004 8.6c0 6.2 8 10.2 8 10.2s8-4 8-10.2z"/></svg>);
     case 'star':       return (<svg {...common} {...props}><path d="M12 3l2.7 5.5L21 9.3l-4.5 4.4L17.4 21 12 18l-5.4 3 1-7.3L3 9.3l6.3-.8z"/></svg>);
+    case 'google':     return (<svg {...common} fill="currentColor" stroke="none" {...props}><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .533 5.333.533 12S5.867 24 12.48 24c3.44 0 6.013-1.147 8.027-3.24 2.053-2.053 2.627-5.307 2.627-8.24 0-.827-.067-1.427-.16-2.067h-10.5z"/></svg>);
     default:           return null;
   }
 }

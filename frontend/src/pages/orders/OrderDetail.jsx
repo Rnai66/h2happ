@@ -3,12 +3,61 @@ import { useParams, useNavigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
-import { api } from "../../lib/api";
+import { api, API_BASE } from "../../lib/api";
 import PayButton from "./PayButton";
 import { useAuth } from "../../context/AuthContext";
 import ReceiptQRCode from "../../components/ReceiptQRCode";
+import { formatOrderNumber } from "../../utils/formatOrderNumber";
 
 /* helpers */
+/* helpers */
+function generatePromptPayPayload(mobile, amount) {
+  // Simple CRC16 (XMODEM)
+  function crc16(data) {
+    let crc = 0xffff;
+    for (let i = 0; i < data.length; i++) {
+      let x = ((crc >> 8) ^ data.charCodeAt(i)) & 0xff;
+      x ^= x >> 4;
+      crc = ((crc << 8) ^ (x << 12) ^ (x << 5) ^ x) & 0xffff;
+    }
+    return crc.toString(16).toUpperCase().padStart(4, "0");
+  }
+
+  const target = mobile.replace(/^0/, "66"); // Convert 08x to 668x
+  const amt = amount.toFixed(2);
+
+  // Tag 00: Version 01
+  // Tag 01: QR Type (11 for static/dynamic? 12 for dynamic) -> 11 is repriceable? 
+  // Standard PromptPay Static: 
+  // 000201 010211 2937 (AID A000000677010111) (01 13 00668xxxxxxxx)
+  // 5802TH 5303764 54xxAmount
+
+  const aid = "0016A000000677010111"; // AID for PromptPay
+
+  // 29: Merchant Account Information
+  // 01: Mobile Number
+  // Length of 0066...
+  const acc = `011300${target}`;
+  const merchantInfo = `00${aid.length.toString().padStart(2, "0")}${aid}${acc}`; // Wait, nested TLV? 
+  // Actually, Merchant Info Tag 29:
+  // SubTag 00 (AID)
+  // SubTag 01 (Mobile) - Value: 00 + 66 + mobile
+
+  const subTag00 = `0016A000000677010111`;
+  const subTag01 = `011300${target}`;
+  const tag29Val = subTag00 + subTag01;
+  const tag29 = `29${tag29Val.length.toString().padStart(2, "0")}${tag29Val}`;
+
+  const tag58 = `5802TH`; // Country
+  const tag53 = `5303764`; // Currency THB
+  const tag54 = `54${amt.length.toString().padStart(2, "0")}${amt}`; // Amount
+
+  let data = `000201010212${tag29}${tag58}${tag53}${tag54}6304`; // 6304 is CRC tag
+
+  data += crc16(data);
+  return data;
+}
+
 function fmtDate(dt) {
   if (!dt) return "-";
   try {
@@ -63,14 +112,25 @@ export default function OrderDetail() {
   const [err, setErr] = useState("");
   const [payMethod, setPayMethod] = useState("cash");
 
+  const [buyer, setBuyer] = useState(null); // 🆕
+  const [seller, setSeller] = useState(null); // 🆕
+
   useEffect(() => {
     (async () => {
       try {
         setLoading(true);
         const res = await api.get(`/orders/${id}`);
-        const ord = res.order || res;
-        if (!ord?._id) setErr("ไม่พบคำสั่งซื้อ");
-        else setOrder(ord);
+
+        if (res.ok && res.order) {
+          setOrder(res.order);
+          setBuyer(res.buyer);
+          setSeller(res.seller);
+        } else {
+          // Fallback
+          const ord = res.order || res;
+          if (!ord?._id) setErr("ไม่พบคำสั่งซื้อ");
+          else setOrder(ord);
+        }
       } catch (e) {
         setErr(e.message || "โหลดคำสั่งซื้อไม่สำเร็จ");
       } finally {
@@ -112,7 +172,7 @@ export default function OrderDetail() {
             <p className="text-sm text-white/70">
               เลขคำสั่งซื้อ:
               <span className="font-mono ml-1 text-white">
-                {order?.orderNumber || order?._id}
+                {formatOrderNumber(order?.orderNumber, isBuyer ? "buyer" : "seller") || order?._id}
               </span>
             </p>
           </div>
@@ -150,10 +210,10 @@ export default function OrderDetail() {
                       {itemTitle}
                     </h2>
                     <p className="text-sm text-white/70">
-                      ผู้ซื้อ: <b className="text-white">{order.buyerId}</b>
+                      ผู้ซื้อ: <b className="text-white">{buyer?.name || buyer?.email || order.buyerId}</b>
                     </p>
                     <p className="text-sm text-white/70">
-                      ผู้ขาย: <b className="text-white">{order.sellerId}</b>
+                      ผู้ขาย: <b className="text-white">{seller?.name || seller?.email || order.sellerId}</b>
                     </p>
                     <p className="text-xs text-white/50">
                       สร้างเมื่อ: {fmtDate(order.createdAt)}
@@ -180,6 +240,8 @@ export default function OrderDetail() {
               </Card>
             </div>
 
+
+
             {/* ===== Payment ===== */}
             <Card className="h2h-card no-print">
               <div className="p-4 space-y-4">
@@ -199,10 +261,9 @@ export default function OrderDetail() {
                       type="button"
                       onClick={() => setPayMethod(id)}
                       className={`px-3 py-1.5 rounded-full text-xs border
-                        ${
-                          payMethod === id
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-black/30 text-white/70 border-white/20"
+                        ${payMethod === id
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "bg-black/30 text-white/70 border-white/20"
                         }`}
                     >
                       {label}
@@ -210,7 +271,31 @@ export default function OrderDetail() {
                   ))}
                 </div>
 
-                {!isPaid && (
+                {/* PromptPay QR Section */}
+                {payMethod === "promptpay" && !isPaid && (
+                  <div className="flex flex-col items-center p-4 bg-white rounded-lg space-y-2">
+                    {seller?.phone ? (
+                      <>
+                        <h3 className="text-black font-bold text-sm">Scan to Pay</h3>
+                        <ReceiptQRCode
+                          value={generatePromptPayPayload(seller.phone, amount)}
+                        />
+                        <p className="text-black text-xs font-mono mt-2">{seller.phone}</p>
+                        <p className="text-black text-lg font-bold">฿{Number(amount).toLocaleString("th-TH")}</p>
+                        <p className="text-gray-500 text-xs text-center">
+                          บัญชี: {seller.name}<br />
+                          (พร้อมเพย์)
+                        </p>
+                      </>
+                    ) : (
+                      <div className="text-center text-red-500 text-sm">
+                        <p>ไม่พบข้อมูลพร้อมเพย์ (เบอร์โทร) ของผู้ขาย</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {!isPaid && payMethod !== "promptpay" && (
                   <PayButton
                     orderId={order._id}
                     amount={amount}
@@ -237,7 +322,7 @@ export default function OrderDetail() {
 
               <div className="receipt-row">
                 <span>Order No</span>
-                <b>{order.orderNumber || order._id}</b>
+                <b>{formatOrderNumber(order.orderNumber, isBuyer ? "buyer" : "seller") || order._id}</b>
               </div>
 
               <div className="receipt-row">
@@ -260,29 +345,159 @@ export default function OrderDetail() {
               />
             </div>
 
-            {/* ===== Token ===== */}
+            {/* ===== Payment Slip (หลักฐานการโอน) ===== */}
             <Card className="h2h-card no-print">
-              <div className="p-4 space-y-2">
-                <h2 className="text-sm font-semibold text-white">
-                  Token & Reputation (ทดลอง)
+              <div className="p-4 space-y-3">
+                <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <span>📄 หลักฐานการโอนเงิน (Slip)</span>
+                  {order.proofOfPayment && <span className="text-green-400 text-xs">✅ อัปโหลดแล้ว</span>}
                 </h2>
-                <p className="text-xs text-white/70">
-                  Token ปัจจุบันของคุณ:
-                  <b className="text-white ml-1">{tokenBalance ?? 0}</b>
-                </p>
 
-                {order.status === "completed" && (
-                  <div className="flex gap-2">
+                {order.proofOfPayment ? (
+                  <div className="space-y-2">
+                    <div className="relative group">
+                      <img
+                        src={order.proofOfPayment}
+                        alt="Payment Slip"
+                        className="w-full rounded-lg border border-white/20 shadow-md cursor-pointer hover:opacity-90 transition"
+                        onClick={() => window.open(order.proofOfPayment, "_blank")}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition">
+                        <span className="bg-black/50 text-white text-xs px-2 py-1 rounded-full">🔍 กดเพื่อขยาย</span>
+                      </div>
+                    </div>
+
                     {isBuyer && (
-                      <Button onClick={() => refreshProfile()}>
-                        🎁 รับ Token (Buyer)
-                      </Button>
+                      <div className="flex gap-2 justify-end">
+                        <label className="cursor-pointer px-3 py-1 bg-white/10 hover:bg-white/20 rounded-md text-xs text-white flex items-center gap-1 transition border border-white/10">
+                          ✏️ แก้ไข
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files[0];
+                              if (!file) return;
+                              try {
+                                const formData = new FormData();
+                                formData.append("images", file);
+                                const token = localStorage.getItem("h2h_token");
+                                const res = await fetch(`${API_BASE}/upload/images`, {
+                                  method: "POST",
+                                  headers: { Authorization: `Bearer ${token}` },
+                                  body: formData
+                                });
+                                const data = await res.json();
+                                if (!data.ok) throw new Error(data.message || "Upload failed");
+                                const slipUrl = data.files?.[0]?.url;
+                                await api.patch(`/orders/${order._id}/slip`, { proofOfPayment: slipUrl });
+                                window.location.reload();
+                              } catch (err) {
+                                console.error(err);
+                                alert("อัปโหลดล้มเหลว: " + err.message);
+                              }
+                            }}
+                          />
+                        </label>
+                        <button
+                          onClick={async () => {
+                            if (!confirm("ต้องการลบสลิปใช่ไหม?")) return;
+                            try {
+                              await api.patch(`/orders/${order._id}/slip`, { proofOfPayment: "" });
+                              window.location.reload();
+                            } catch (err) {
+                              alert("ลบไม่สำเร็จ: " + err.message);
+                            }
+                          }}
+                          className="px-3 py-1 bg-red-500/10 hover:bg-red-500/30 text-red-400 rounded-md text-xs flex items-center gap-1 transition border border-red-500/20"
+                        >
+                          🗑️ ลบ
+                        </button>
+                      </div>
                     )}
-                    {isSeller && (
-                      <Button onClick={() => refreshProfile()}>
-                        🎁 รับ Token (Seller)
-                      </Button>
+                  </div>
+                ) : (
+                  <div className="text-center py-6 border-2 border-dashed border-white/20 rounded-xl bg-white/5">
+                    <p className="text-sm text-white/50 mb-3">ยังไม่มีหลักฐานการโอน</p>
+
+                    {isBuyer && (
+                      <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white text-sm transition shadow-lg">
+                        <span>📤 อัปโหลดสลิป</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+
+                            try {
+                              const formData = new FormData();
+                              formData.append("images", file);
+
+                              const token = localStorage.getItem("h2h_token");
+                              // ✅ Fixed Endpoint & Field
+                              const res = await fetch(`${API_BASE}/upload/images`, {
+                                method: "POST",
+                                headers: { Authorization: `Bearer ${token}` },
+                                body: formData
+                              });
+                              const data = await res.json();
+                              if (!data.ok) throw new Error(data.message || "Upload failed");
+
+                              const slipUrl = data.files?.[0]?.url;
+                              if (!slipUrl) throw new Error("No URL returned");
+
+                              await api.patch(`/orders/${order._id}/slip`, { proofOfPayment: slipUrl });
+                              window.location.reload();
+                            } catch (err) {
+                              console.error(err);
+                              alert("อัปโหลดล้มเหลว: " + err.message);
+                            }
+                          }}
+                        />
+                      </label>
                     )}
+                  </div>
+                )}
+
+                {/* Seller Verification Actions */}
+                {!isBuyer && order.paymentStatus === "pending_verification" && (
+                  <div className="pt-4 border-t border-white/10 flex gap-2">
+                    <button
+                      onClick={async () => {
+                        if (!confirm("ยืนยันยอดเงินถูกต้อง?")) return;
+                        try {
+                          await api.patch(`/orders/${order._id}/status`, {
+                            paymentStatus: "paid",
+                            status: "completed"
+                          });
+                          window.location.reload();
+                        } catch (e) {
+                          alert(e.message);
+                        }
+                      }}
+                      className="flex-1 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-semibold shadow-lg transition"
+                    >
+                      ✅ ยืนยันการชำระเงิน
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!confirm("ต้องการปฏิเสธยอดเงินนี้? (สถานะจะกลับเป็น Unpaid)")) return;
+                        try {
+                          await api.patch(`/orders/${order._id}/status`, {
+                            paymentStatus: "unpaid",
+                            status: "pending"
+                          });
+                          window.location.reload();
+                        } catch (e) {
+                          alert(e.message);
+                        }
+                      }}
+                      className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/50 rounded-lg text-sm font-semibold transition"
+                    >
+                      ❌ ปฏิเสธ
+                    </button>
                   </div>
                 )}
               </div>

@@ -151,15 +151,16 @@ export default function Search() {
   }
 
   /* ================= UI bits ================= */
+  /* ===== UI bits ===== */
   const TabButton = ({ id, children }) => (
     <button
       type="button"
       onClick={() => setTab(id)}
       className={[
-        "px-3 py-2 rounded-xl text-sm border",
+        "px-3 py-2 rounded-xl text-sm border transition-colors",
         tab === id
           ? "bg-blue-600 text-white border-blue-600"
-          : "bg-black/30 text-white/70 border-white/15 hover:bg-black/40",
+          : "bg-white dark:bg-black/30 text-[var(--text-muted)] border-[var(--glass-border)] hover:bg-black/5 dark:hover:bg-white/5",
       ].join(" ")}
     >
       {children}
@@ -172,9 +173,9 @@ export default function Search() {
 
         {/* ===== Header ===== */}
         <div>
-          <h1 className="text-2xl font-bold text-white">🔍 Search</h1>
-          <p className="text-sm text-white/70">
-            คำค้นหา: <b className="text-white">{query || "-"}</b>
+          <h1 className="text-2xl font-bold text-[var(--text-main)]">🔍 Search</h1>
+          <p className="text-sm text-[var(--text-muted)]">
+            คำค้นหา: <b className="text-[var(--text-main)]">{query || "-"}</b>
           </p>
         </div>
 
@@ -186,14 +187,14 @@ export default function Search() {
         </div>
 
         {/* ===== Status ===== */}
-        {loading && <p className="text-white/70">กำลังโหลด...</p>}
-        {err && <p className="text-red-300">{err}</p>}
+        {loading && <p className="text-[var(--text-muted)]">กำลังโหลด...</p>}
+        {err && <p className="text-red-500">{err}</p>}
 
         {/* ================= TAB: H2H ================= */}
         {tab === "h2h" && (
           <>
             {!loading && query && filtered.length === 0 && (
-              <p className="text-white/60">ไม่พบสินค้าที่ตรงกับคำค้น</p>
+              <p className="text-[var(--text-muted)]">ไม่พบสินค้าที่ตรงกับคำค้น</p>
             )}
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -207,18 +208,18 @@ export default function Search() {
                     <img
                       src={it.images?.[0] || "https://placehold.co/400x300?text=H2H"}
                       alt={it.title}
-                      className="w-full h-40 object-cover rounded-lg border border-white/15"
+                      className="w-full h-40 object-cover rounded-lg border border-[var(--glass-border)]"
                     />
-                    <div className="font-semibold text-white truncate">{it.title}</div>
-                    <div className="text-yellow-300 font-bold">{thb(it.price)}</div>
-                    <div className="text-xs text-white/60 truncate">{it.location || "—"}</div>
+                    <div className="font-semibold text-[var(--text-main)] truncate">{it.title}</div>
+                    <div className="text-[var(--text-accent)] font-bold">{thb(it.price)}</div>
+                    <div className="text-xs text-[var(--text-muted)] truncate">{it.location || "—"}</div>
                   </div>
                 </Card>
               ))}
             </div>
 
             {query && filtered.length > 0 && (
-              <div className="text-xs text-white/50">
+              <div className="text-xs text-[var(--text-muted)]">
                 * ค้นหาจากสินค้าที่มีอยู่ในระบบ H2H (Safe Mode)
               </div>
             )}
@@ -229,12 +230,12 @@ export default function Search() {
         {tab === "google" && (
           <>
             {!query ? (
-              <p className="text-white/60">ใส่คำค้นใน URL เช่น /search?q=ข้าว</p>
+              <p className="text-[var(--text-muted)]">ใส่คำค้นใน URL เช่น /search?q=ข้าว</p>
             ) : (
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="h2h-card p-4">
-                  <h3 className="text-sm font-semibold text-white mb-1">🔎 ราคาอ้างอิงจาก Google</h3>
-                  <p className="text-xs text-white/60 mb-2">
+                  <h3 className="text-sm font-semibold text-[var(--text-main)] mb-1">🔎 ราคาอ้างอิงจาก Google</h3>
+                  <p className="text-xs text-[var(--text-muted)] mb-2">
                     เปิดดูราคาตลาดภายนอกเพื่อเปรียบเทียบ (ปลอดภัย ไม่ scrape)
                   </p>
                   <a
@@ -246,14 +247,14 @@ export default function Search() {
                     👉 ดูผลการค้นหา “{query} ราคา”
                   </a>
 
-                  <div className="mt-3 text-xs text-white/50">
+                  <div className="mt-3 text-xs text-[var(--text-muted)]">
                     Tip: คัดลอกราคาเฉลี่ยจากเว็บภายนอก แล้วเทียบกับ H2H ในแท็บ AI
                   </div>
                 </div>
 
                 <div className="h2h-card p-4">
-                  <h3 className="text-sm font-semibold text-white mb-1">📍 พิกัด / พื้นที่จาก Google Maps</h3>
-                  <p className="text-xs text-white/60 mb-2">
+                  <h3 className="text-sm font-semibold text-[var(--text-main)] mb-1">📍 พิกัด / พื้นที่จาก Google Maps</h3>
+                  <p className="text-xs text-[var(--text-muted)] mb-2">
                     ดูตำแหน่งร้านหรือพื้นที่จำหน่าย (เปิดแท็บใหม่)
                   </p>
                   <a
@@ -267,7 +268,7 @@ export default function Search() {
                 </div>
 
                 <div className="h2h-card p-4 md:col-span-2">
-                  <h3 className="text-sm font-semibold text-white mb-2">🔗 ลิงก์ค้นหาเพิ่มเติม</h3>
+                  <h3 className="text-sm font-semibold text-[var(--text-main)] mb-2">🔗 ลิงก์ค้นหาเพิ่มเติม</h3>
                   <div className="flex flex-wrap gap-2">
                     <a
                       className="text-blue-300 text-sm hover:underline"
@@ -304,36 +305,35 @@ export default function Search() {
         {tab === "ai" && (
           <>
             {!query ? (
-              <p className="text-white/60">ใส่คำค้นใน URL เช่น /search?q=ข้าว</p>
+              <p className="text-[var(--text-muted)]">ใส่คำค้นใน URL เช่น /search?q=ข้าว</p>
             ) : (
               <div className="space-y-4">
                 {/* Rule-based */}
                 {aiRule ? (
                   <div className="h2h-card p-4">
-                    <h3 className="text-sm font-semibold text-white mb-1">
+                    <h3 className="text-sm font-semibold text-[var(--text-main)] mb-1">
                       🤖 AI แนะนำราคา (Rule-based จากข้อมูล H2H)
                     </h3>
                     <p
-                      className={`text-sm ${
-                        aiRule.level === "good"
+                      className={`text-sm ${aiRule.level === "good"
                           ? "text-emerald-300"
                           : aiRule.level === "fair"
-                          ? "text-yellow-300"
-                          : "text-red-300"
-                      }`}
+                            ? "text-yellow-300"
+                            : "text-red-300"
+                        }`}
                     >
                       {aiRule.text}
                     </p>
 
-                    <div className="mt-2 text-xs text-white/70 space-y-1">
-                      <div>จำนวนผลลัพธ์: <b className="text-white">{filtered.length}</b></div>
-                      <div>ราคาเฉลี่ย: <b className="text-white">{thb(avgPrice)}</b></div>
-                      <div>ราคากลาง: <b className="text-white">{thb(midPrice)}</b></div>
+                    <div className="mt-2 text-xs text-[var(--text-muted)] space-y-1">
+                      <div>จำนวนผลลัพธ์: <b className="text-[var(--text-main)]">{filtered.length}</b></div>
+                      <div>ราคาเฉลี่ย: <b className="text-[var(--text-main)]">{thb(avgPrice)}</b></div>
+                      <div>ราคากลาง: <b className="text-[var(--text-main)]">{thb(midPrice)}</b></div>
                       <div>
                         แนะนำตั้งราคาใกล้:{" "}
-                        <b className="text-yellow-300">{thb(aiRule.suggest)}</b>
+                        <b className="text-[var(--text-accent)]">{thb(aiRule.suggest)}</b>
                       </div>
-                      <div className="text-white/50">
+                      <div className="text-[var(--text-muted)]">
                         สัญญาณราคา: {aiRule.diffPct < 0 ? `ถูกกว่า ~${Math.abs(aiRule.diffPct)}%` : `แพงกว่า ~${aiRule.diffPct}%`}
                       </div>
                     </div>
@@ -350,10 +350,10 @@ export default function Search() {
                 <div className="h2h-card p-4">
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div>
-                      <h3 className="text-sm font-semibold text-white mb-1">
+                      <h3 className="text-sm font-semibold text-[var(--text-main)] mb-1">
                         🧠 AI แนะนำราคา (LLM – ผ่าน Backend)
                       </h3>
-                      <p className="text-xs text-white/60">
+                      <p className="text-xs text-[var(--text-muted)]">
                         ใช้ LLM วิเคราะห์จากสถิติ + ตัวอย่างผลลัพธ์ (ไม่ส่งข้อมูลส่วนตัว)
                       </p>
                     </div>
@@ -389,7 +389,7 @@ export default function Search() {
                     </div>
                   )}
 
-                  <div className="mt-3 text-xs text-white/50">
+                  <div className="mt-3 text-xs text-[var(--text-muted)]">
                     หมายเหตุ: ถ้ายังไม่ได้ตั้งค่า API key / route backend จะขึ้น error — ดูไฟล์ backend ด้านล่าง
                   </div>
                 </div>
