@@ -57,62 +57,64 @@ export default function PaymentsPage() {
 
       {/* ================= Table ================= */}
       <H2HCard className="overflow-hidden shadow-lg">
-        <table className="table w-full">
-          <thead>
-            <tr>
-              <th className="th">User</th>
-              <th className="th">Amount (฿)</th>
-              <th className="th">Date</th>
-              <th className="th text-right pr-4">Status</th>
-            </tr>
-          </thead>
+        <div className="overflow-x-auto">
+          <table className="table w-full">
+            <thead>
+              <tr>
+                <th className="th">User</th>
+                <th className="th">Amount (฿)</th>
+                <th className="th">Date</th>
+                <th className="th text-right pr-4">Status</th>
+              </tr>
+            </thead>
 
-          <tbody>
-            {loading ? (
-              [...Array(4)].map((_, i) => (
-                <tr key={i}>
-                  <td colSpan="4" className="td">
-                    <H2HSkeleton height="30px" />
+            <tbody>
+              {loading ? (
+                [...Array(4)].map((_, i) => (
+                  <tr key={i}>
+                    <td colSpan="4" className="td">
+                      <H2HSkeleton height="30px" />
+                    </td>
+                  </tr>
+                ))
+              ) : payments.length > 0 ? (
+                payments.map((p) => (
+                  <H2HTableRow
+                    key={p.id}
+                    cells={[
+                      p.user,
+                      <span key={p.id + "-amount"} className="num">
+                        {p.amount.toLocaleString()}
+                      </span>,
+                      new Date(p.date).toLocaleDateString(),
+                      <div className="flex justify-end" key={p.id + "-status"}>
+                        <H2HTag
+                          text={p.status}
+                          color={
+                            p.status === "Completed"
+                              ? "gold"
+                              : p.status === "Pending"
+                                ? "blue"
+                                : "gray"
+                          }
+                        />
+                      </div>,
+                    ]}
+                  />
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan="4"
+                    className="td text-center text-[var(--fg-muted)] italic py-6"
+                  >
+                    No payment records found.
                   </td>
                 </tr>
-              ))
-            ) : payments.length > 0 ? (
-              payments.map((p) => (
-                <H2HTableRow
-                  key={p.id}
-                  cells={[
-                    p.user,
-                    <span key={p.id + "-amount"} className="num">
-                      {p.amount.toLocaleString()}
-                    </span>,
-                    new Date(p.date).toLocaleDateString(),
-                    <div className="flex justify-end" key={p.id + "-status"}>
-                      <H2HTag
-                        text={p.status}
-                        color={
-                          p.status === "Completed"
-                            ? "gold"
-                            : p.status === "Pending"
-                            ? "blue"
-                            : "gray"
-                        }
-                      />
-                    </div>,
-                  ]}
-                />
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan="4"
-                  className="td text-center text-[var(--fg-muted)] italic py-6"
-                >
-                  No payment records found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {/* ================= Footer Buttons ================= */}
         <div className="mt-5 flex gap-3 justify-end">

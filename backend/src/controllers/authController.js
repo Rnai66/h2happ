@@ -25,7 +25,7 @@ export async function register(req, res) {
 
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
-    const user = await User.create({ name, email, password: hash, phone, role: "user" });
+    const user = await User.create({ name, email, passwordHash: hash, phone, role: "user" });
 
     const token = signToken(user);
     return res.status(201).json({
@@ -50,7 +50,7 @@ export async function login(req, res) {
     const user = await User.findOne({ email });
     if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
-    const ok = await bcrypt.compare(password, user.password);
+    const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) return res.status(401).json({ message: "Invalid credentials" });
 
     const token = signToken(user);
@@ -129,7 +129,7 @@ export async function getProfile(req, res) {
   try {
     const conn = getConnection(DBNAMES.USER);
     const User = UserModel(conn);
-    const user = await User.findById(req.user.id).select("-password");
+    const user = await User.findById(req.user.id).select("-passwordHash");
     if (!user) return res.status(404).json({ message: "User not found" });
     return res.json({ user });
   } catch (err) {

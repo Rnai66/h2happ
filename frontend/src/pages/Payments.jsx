@@ -46,49 +46,51 @@ export default function PaymentsPage() {
             <H2HSkeleton height="2rem" />
           </div>
         ) : (
-          <table className="table w-full">
-            <thead>
-              <tr>
-                <th className="th">Transaction</th>
-                <th className="th">Amount</th>
-                <th className="th text-right pr-4">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {payments.length > 0 ? (
-                payments.map((p) => (
-                  <H2HTableRow
-                    key={p._id}
-                    cells={[
-                      p.txId || "—",
-                      `${p.amount?.toFixed(2) || "0.00"} THB`,
-                      <div key={p._id + "-status"} className="flex justify-end">
-                        <H2HTag
-                          text={p.status || "pending"}
-                          color={
-                            p.status === "success"
-                              ? "gold"
-                              : p.status === "failed"
-                              ? "blue"
-                              : "gray"
-                          }
-                        />
-                      </div>,
-                    ]}
-                  />
-                ))
-              ) : (
+          <div className="overflow-x-auto">
+            <table className="table w-full">
+              <thead>
                 <tr>
-                  <td
-                    colSpan="3"
-                    className="td text-center text-[var(--fg-muted)] italic py-6"
-                  >
-                    No payments found.
-                  </td>
+                  <th className="th">Transaction</th>
+                  <th className="th">Amount</th>
+                  <th className="th text-right pr-4">Status</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {payments.length > 0 ? (
+                  payments.map((p) => (
+                    <H2HTableRow
+                      key={p._id}
+                      cells={[
+                        p.txId || "—",
+                        `${p.amount?.toFixed(2) || "0.00"} THB`,
+                        <div key={p._id + "-status"} className="flex justify-end">
+                          <H2HTag
+                            text={p.status || "pending"}
+                            color={
+                              p.status === "success"
+                                ? "gold"
+                                : p.status === "failed"
+                                  ? "blue"
+                                  : "gray"
+                            }
+                          />
+                        </div>,
+                      ]}
+                    />
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="3"
+                      className="td text-center text-[var(--fg-muted)] italic py-6"
+                    >
+                      No payments found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
 
         <div className="mt-5 flex justify-end">

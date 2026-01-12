@@ -2,6 +2,8 @@
 import { useMemo, useState } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
+import { Capacitor } from "@capacitor/core";
+import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
 import MainLayout from "../../layouts/MainLayout";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
@@ -21,7 +23,8 @@ export default function AuthCombined() {
   const nav = useNavigate();
   const { login, register, googleLogin: authGoogleLogin } = useAuth();
 
-  const handleGoogleLogin = useGoogleLogin({
+  // ✅ Web Google Login
+  const googleLoginWeb = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
         await authGoogleLogin(tokenResponse.access_token);
@@ -33,6 +36,30 @@ export default function AuthCombined() {
     },
     onError: () => toast.error("Google Login ไม่สำเร็จ"),
   });
+
+  // ✅ Native Google Login
+  async function handleNativeGoogleLogin() {
+    try {
+      // Must be initialized in App.jsx or here (safe to call multiple times? usually needs init once)
+      // GoogleAuth.initialize() is deprecated/auto-init in v3+ mostly, 
+      // but let's just call signIn.
+      const user = await GoogleAuth.signIn();
+      // user.authentication.accessToken is what we need for the backend UserInfo check
+      await authGoogleLogin(user.authentication.accessToken);
+      nav("/items");
+    } catch (err) {
+      console.error("Native Google Login Error:", err);
+      toast.error("Google Login Failed (Native)");
+    }
+  }
+
+  const handleGoogleLogin = () => {
+    if (Capacitor.isNativePlatform()) {
+      handleNativeGoogleLogin();
+    } else {
+      googleLoginWeb();
+    }
+  };
 
   // --- Login state ---
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });

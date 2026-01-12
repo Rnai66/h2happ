@@ -4,7 +4,17 @@ import MainLayout from "../layouts/MainLayout";
 import Card from "../components/ui/Card";
 import { api } from "../lib/api"; // wrapper มี token ให้อยู่แล้ว
 
-const RAW_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000";
+import { Capacitor } from "@capacitor/core";
+
+// 🟢 FIX: Cleaned up URL logic
+// Actually, let's match lib/api.js logic exactly.
+const DEFAULT_BASE = import.meta.env.VITE_API_BASE || "http://10.0.2.2:4010";
+let RAW_BASE = DEFAULT_BASE;
+
+if (Capacitor.isNativePlatform()) {
+  RAW_BASE = "http://10.0.2.2:4010";
+}
+
 const API_ROOT = RAW_BASE.replace(/\/$/, "").replace(/\/api$/, "");
 
 function getRole() {

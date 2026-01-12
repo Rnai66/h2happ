@@ -193,46 +193,48 @@ export default function AdminDashboard() {
                 {/* ===== USERS TAB ===== */}
                 {!loading && tab === "users" && (
                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-hidden">
-                        <table className="min-w-full text-sm">
-                            <thead className="bg-slate-100 dark:bg-slate-700">
-                                <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Name</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Email</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Role</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">วันที่สร้าง</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {users.map((u) => (
-                                    <tr key={u._id} className="border-t border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">
-                                        <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{u.name}</td>
-                                        <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{u.email}</td>
-                                        <td className="px-4 py-3">
-                                            <select
-                                                value={u.role}
-                                                onChange={(e) => handleUserRoleChange(u._id, e.target.value)}
-                                                className="px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-xs"
-                                            >
-                                                <option value="user">User</option>
-                                                <option value="seller">Seller</option>
-                                                <option value="admin">Admin</option>
-                                            </select>
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">{formatDate(u.createdAt)}</td>
-                                        <td className="px-4 py-3">
-                                            <button
-                                                onClick={() => handleDeleteUser(u._id)}
-                                                className="text-red-500 hover:text-red-700 text-xs"
-                                                disabled={u._id === user._id}
-                                            >
-                                                🗑️ Delete
-                                            </button>
-                                        </td>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full text-sm">
+                                <thead className="bg-slate-100 dark:bg-slate-700">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Name</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Email</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Role</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">วันที่สร้าง</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {users.map((u) => (
+                                        <tr key={u._id} className="border-t border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">
+                                            <td className="px-4 py-3 text-gray-900 dark:text-gray-100 whitespace-nowrap">{u.name}</td>
+                                            <td className="px-4 py-3 text-gray-600 dark:text-gray-300 whitespace-nowrap">{u.email}</td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <select
+                                                    value={u.role}
+                                                    onChange={(e) => handleUserRoleChange(u._id, e.target.value)}
+                                                    className="px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-xs"
+                                                >
+                                                    <option value="user">User</option>
+                                                    <option value="seller">Seller</option>
+                                                    <option value="admin">Admin</option>
+                                                </select>
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{formatDate(u.createdAt)}</td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <button
+                                                    onClick={() => handleDeleteUser(u._id)}
+                                                    className="text-red-500 hover:text-red-700 text-xs"
+                                                    disabled={u._id === user._id}
+                                                >
+                                                    🗑️ Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                         {users.length === 0 && (
                             <div className="text-center py-8 text-gray-500">No users found</div>
                         )}
@@ -242,62 +244,64 @@ export default function AdminDashboard() {
                 {/* ===== ORDERS TAB ===== */}
                 {!loading && tab === "orders" && (
                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-hidden">
-                        <table className="min-w-full text-sm">
-                            <thead className="bg-slate-100 dark:bg-slate-700">
-                                <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Order #</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Item</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Amount</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Status</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Payment</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">วันที่สร้าง</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {orders.map((o) => (
-                                    <tr key={o._id} className="border-t border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">
-                                        <td className="px-4 py-3 font-mono text-xs text-gray-900 dark:text-gray-100">
-                                            <div>{formatOrderNumber(o.orderNumber, "buyer")}</div>
-                                            <div className="text-gray-400 dark:text-gray-500 scale-90 origin-left">{formatOrderNumber(o.orderNumber, "seller")}</div>
-                                        </td>
-                                        <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{o.itemSnapshot?.title || "-"}</td>
-                                        <td className="px-4 py-3 text-amber-600 dark:text-amber-400 font-medium">฿{Number(o.amount || 0).toLocaleString()}</td>
-                                        <td className="px-4 py-3">
-                                            <select
-                                                value={o.status}
-                                                onChange={(e) => handleOrderStatusChange(o._id, "status", e.target.value)}
-                                                className="px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-xs"
-                                            >
-                                                <option value="pending">Pending</option>
-                                                <option value="completed">Completed</option>
-                                                <option value="cancelled">Cancelled</option>
-                                            </select>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <select
-                                                value={o.paymentStatus}
-                                                onChange={(e) => handleOrderStatusChange(o._id, "paymentStatus", e.target.value)}
-                                                className="px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-xs"
-                                            >
-                                                <option value="unpaid">Unpaid</option>
-                                                <option value="paid">Paid</option>
-                                                <option value="refunded">Refunded</option>
-                                            </select>
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">{formatDate(o.createdAt)}</td>
-                                        <td className="px-4 py-3">
-                                            <button
-                                                onClick={() => handleDeleteOrder(o._id)}
-                                                className="text-red-500 hover:text-red-700 text-xs"
-                                            >
-                                                🗑️ Delete
-                                            </button>
-                                        </td>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full text-sm">
+                                <thead className="bg-slate-100 dark:bg-slate-700">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Order #</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Item</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Amount</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Status</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Payment</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">วันที่สร้าง</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {orders.map((o) => (
+                                        <tr key={o._id} className="border-t border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">
+                                            <td className="px-4 py-3 font-mono text-xs text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                                                <div>{formatOrderNumber(o.orderNumber, "buyer")}</div>
+                                                <div className="text-gray-400 dark:text-gray-500 scale-90 origin-left">{formatOrderNumber(o.orderNumber, "seller")}</div>
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-600 dark:text-gray-300 min-w-[150px]">{o.itemSnapshot?.title || "-"}</td>
+                                            <td className="px-4 py-3 text-amber-600 dark:text-amber-400 font-medium whitespace-nowrap">฿{Number(o.amount || 0).toLocaleString()}</td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <select
+                                                    value={o.status}
+                                                    onChange={(e) => handleOrderStatusChange(o._id, "status", e.target.value)}
+                                                    className="px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-xs"
+                                                >
+                                                    <option value="pending">Pending</option>
+                                                    <option value="completed">Completed</option>
+                                                    <option value="cancelled">Cancelled</option>
+                                                </select>
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <select
+                                                    value={o.paymentStatus}
+                                                    onChange={(e) => handleOrderStatusChange(o._id, "paymentStatus", e.target.value)}
+                                                    className="px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-xs"
+                                                >
+                                                    <option value="unpaid">Unpaid</option>
+                                                    <option value="paid">Paid</option>
+                                                    <option value="refunded">Refunded</option>
+                                                </select>
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{formatDate(o.createdAt)}</td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <button
+                                                    onClick={() => handleDeleteOrder(o._id)}
+                                                    className="text-red-500 hover:text-red-700 text-xs"
+                                                >
+                                                    🗑️ Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                         {orders.length === 0 && (
                             <div className="text-center py-8 text-gray-500">No orders found</div>
                         )}
@@ -307,54 +311,56 @@ export default function AdminDashboard() {
                 {/* ===== ITEMS TAB ===== */}
                 {!loading && tab === "items" && (
                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md overflow-hidden">
-                        <table className="min-w-full text-sm">
-                            <thead className="bg-slate-100 dark:bg-slate-700">
-                                <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Image</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Title</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Price</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Status</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">วันที่สร้าง</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {items.map((item) => (
-                                    <tr key={item._id} className="border-t border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">
-                                        <td className="px-4 py-3">
-                                            {item.images?.[0] ? (
-                                                <img src={item.images[0]} alt="" className="w-12 h-12 rounded object-cover" />
-                                            ) : (
-                                                <div className="w-12 h-12 bg-slate-200 dark:bg-slate-600 rounded flex items-center justify-center">📦</div>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{item.title}</td>
-                                        <td className="px-4 py-3 text-amber-600 dark:text-amber-400 font-medium">฿{Number(item.price || 0).toLocaleString()}</td>
-                                        <td className="px-4 py-3">
-                                            <select
-                                                value={item.status}
-                                                onChange={(e) => handleItemUpdate(item._id, "status", e.target.value)}
-                                                className="px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-xs"
-                                            >
-                                                <option value="draft">Draft</option>
-                                                <option value="active">Active</option>
-                                                <option value="sold">Sold</option>
-                                                <option value="hidden">Hidden</option>
-                                            </select>
-                                        </td>
-                                        <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">{formatDate(item.createdAt)}</td>
-                                        <td className="px-4 py-3">
-                                            <button
-                                                onClick={() => handleDeleteItem(item._id)}
-                                                className="text-red-500 hover:text-red-700 text-xs"
-                                            >
-                                                🗑️ Delete
-                                            </button>
-                                        </td>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full text-sm">
+                                <thead className="bg-slate-100 dark:bg-slate-700">
+                                    <tr>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Image</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Title</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Price</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Status</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">วันที่สร้าง</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-700 dark:text-gray-200 whitespace-nowrap">Actions</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {items.map((item) => (
+                                        <tr key={item._id} className="border-t border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700">
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                {item.images?.[0] ? (
+                                                    <img src={item.images[0]} alt="" className="w-12 h-12 rounded object-cover" />
+                                                ) : (
+                                                    <div className="w-12 h-12 bg-slate-200 dark:bg-slate-600 rounded flex items-center justify-center">📦</div>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3 text-gray-900 dark:text-gray-100 min-w-[200px]">{item.title}</td>
+                                            <td className="px-4 py-3 text-amber-600 dark:text-amber-400 font-medium whitespace-nowrap">฿{Number(item.price || 0).toLocaleString()}</td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <select
+                                                    value={item.status}
+                                                    onChange={(e) => handleItemUpdate(item._id, "status", e.target.value)}
+                                                    className="px-2 py-1 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 text-xs"
+                                                >
+                                                    <option value="draft">Draft</option>
+                                                    <option value="active">Active</option>
+                                                    <option value="sold">Sold</option>
+                                                    <option value="hidden">Hidden</option>
+                                                </select>
+                                            </td>
+                                            <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{formatDate(item.createdAt)}</td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <button
+                                                    onClick={() => handleDeleteItem(item._id)}
+                                                    className="text-red-500 hover:text-red-700 text-xs"
+                                                >
+                                                    🗑️ Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                         {items.length === 0 && (
                             <div className="text-center py-8 text-gray-500">No items found</div>
                         )}

@@ -4,7 +4,13 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import Card from "../components/ui/Card";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000/api";
+import { Capacitor } from "@capacitor/core";
+
+let API_BASE = import.meta.env.VITE_API_BASE || "http://10.0.2.2:4010/api";
+
+if (Capacitor.isNativePlatform()) {
+  API_BASE = "http://10.0.2.2:4010/api";
+}
 
 function useQuery() {
   const { search } = useLocation();

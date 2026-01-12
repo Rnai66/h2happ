@@ -1,7 +1,14 @@
 // frontend/src/lib/api.js
+import { Capacitor } from "@capacitor/core";
 
 // ให้ตั้ง VITE_API_BASE เป็น http://localhost:4000 หรือ URL backend (ไม่ต้องมี /api ท้าย)
-const RAW_BASE = import.meta.env.VITE_API_BASE || "http://10.0.2.2:4010";
+let RAW_BASE = import.meta.env.VITE_API_BASE || "http://10.0.2.2:4010";
+
+// 🟢 FIX: If running as Native App (Android/iOS), force usage of Emulator Host IP
+// (For real device, change this to your LAN IP e.g. 192.168.x.x)
+if (Capacitor.isNativePlatform()) {
+  RAW_BASE = "http://10.0.2.2:4010";
+}
 
 // base จริงของ API = <base>/api   เช่น http://localhost:4000/api
 export const API_BASE = RAW_BASE.replace(/\/$/, "") + "/api";

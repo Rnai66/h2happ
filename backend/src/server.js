@@ -32,6 +32,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // ===== Base middlewares =====
+app.use((req, res, next) => {
+  console.log(`👉 [INCOMING] ${req.method} ${req.url} from ${req.ip} | Origin: ${req.headers.origin}`);
+  next();
+});
 app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use("/api/upload", uploadRoutes);

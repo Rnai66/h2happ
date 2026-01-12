@@ -1,5 +1,13 @@
 // frontend/src/api/authFetch.js
-const RAW_BASE = import.meta.env.VITE_API_BASE || "http://10.0.2.2:4010";
+import { Capacitor } from "@capacitor/core";
+
+let RAW_BASE = import.meta.env.VITE_API_BASE || "http://10.0.2.2:4010";
+
+// 🟢 FIX: If running as Native App (Android/iOS), force usage of Emulator Host IP
+if (Capacitor.isNativePlatform()) {
+  RAW_BASE = "http://10.0.2.2:4010";
+}
+
 const API_ROOT = RAW_BASE.replace(/\/$/, "").replace(/\/api$/, "");
 
 export function getToken() {
