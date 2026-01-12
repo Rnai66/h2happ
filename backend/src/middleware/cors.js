@@ -13,9 +13,11 @@ function buildAllowedOrigins() {
 const allowedOrigins = buildAllowedOrigins();
 
 export const corsOptions = {
-  // 🟢 DEBUG: Log and Allow ALL origins
-  console.log(`[CORS] Request from origin: ${origin}`);
-  return callback(null, true);
+  origin(origin, callback) {
+    // 🟢 DEBUG: Log and Allow ALL origins
+    console.log(`[CORS] Request from origin: ${origin}`);
+    return callback(null, true);
+  },
   credentials: true,
   optionsSuccessStatus: 204,
 };
