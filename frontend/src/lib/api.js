@@ -1,7 +1,7 @@
 // frontend/src/lib/api.js
 
 // ให้ตั้ง VITE_API_BASE เป็น http://localhost:4000 หรือ URL backend (ไม่ต้องมี /api ท้าย)
-const RAW_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000";
+const RAW_BASE = import.meta.env.VITE_API_BASE || "http://10.0.2.2:4010";
 
 // base จริงของ API = <base>/api   เช่น http://localhost:4000/api
 export const API_BASE = RAW_BASE.replace(/\/$/, "") + "/api";

@@ -65,6 +65,25 @@ router.patch("/:id/status", protect, async (req, res, next) => {
       });
     }
 
+    // ✅ Stock Deduction Logic (Phase 2)
+    // ถ้าสถานะเปลี่ยนเป็น completed (หรือ user มองว่า transaction finished)
+    // ให้ลด quantity ของสินค้า (สมมติ 1 order = 1 piece ถ้าไม่มี field qty ใน order)
+    if (status === "completed" && order.status !== "completed") {
+      const item = await Item.findById(order.itemId);
+      if (item) {
+        // ลดจำนวน
+        // หมายเหตุ: ถ้าในอนาคต order มี field quantity ให้ใช้ order.quantity แทน 1
+        const deduct = 1;
+        item.quantity = Math.max(0, (item.quantity || 1) - deduct);
+
+        // ถ้าหมด → set sold
+        if (item.quantity <= 0) {
+          item.status = "sold";
+        }
+        await item.save();
+      }
+    }
+
     // Update with timestamp
     // Note: Mongoose timestamps handle updatedAt automatically, but explicit update is fine too
     const updatedOrder = await Order.findByIdAndUpdate(

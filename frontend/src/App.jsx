@@ -7,7 +7,10 @@ import Home from "./pages/common/Home";
 
 import Register from "./pages/auth/Register";
 import Login from "./pages/auth/Login";
+
 import AuthCombined from "./pages/auth/AuthCombined";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 
 import Items from "./pages/items/Items";
 import ItemDetail from "./pages/items/ItemDetail";
@@ -54,7 +57,10 @@ export default function App() {
         {/* ✅ Auth – ใช้ AuthCombined เป็นหลัก */}
         <Route path="/auth" element={<AuthCombined />} />
         <Route path="/auth/register" element={<Register />} />
+
         <Route path="/auth/login" element={<Login />} />
+        <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+        <Route path="/auth/reset-password" element={<ResetPassword />} />
 
         {/* Redirect สั้น ๆ */}
         <Route path="/login" element={<Navigate to="/auth?tab=login" replace />} />

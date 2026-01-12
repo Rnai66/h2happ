@@ -34,6 +34,11 @@ export default function Login() {
         <form className="space-y-4" onSubmit={onSubmit}>
           <Input label="อีเมล" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
           <Input label="รหัสผ่าน" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+          <div className="flex justify-end">
+            <Link to="/auth/forgot-password" className="text-sm text-blue-600 hover:underline">
+              ลืมรหัสผ่าน?
+            </Link>
+          </div>
           {err && <p className="text-sm text-red-600">{err}</p>}
           <Button disabled={busy}>{busy ? 'กำลังเข้าสู่ระบบ…' : 'เข้าสู่ระบบ'}</Button>
         </form>

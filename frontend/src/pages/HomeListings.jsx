@@ -104,6 +104,9 @@ export default function HomeListings() {
                   <div className="flex items-baseline justify-between gap-1">
                     <p className="text-base font-bold text-[var(--text-accent)]">
                       ฿{Number(item.price || 0).toLocaleString("th-TH")}
+                      <span className="ml-2 text-[10px] font-normal text-slate-500">
+                        ({item.quantity ?? 1})
+                      </span>
                     </p>
                     <p className="text-xs text-[var(--text-muted)] truncate max-w-[60%]">
                       {item.seller?.name || item.sellerName || "ไม่ระบุ"} <br />

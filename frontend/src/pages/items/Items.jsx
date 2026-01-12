@@ -111,6 +111,9 @@ export default function Items() {
                   <p className="text-base font-bold text-blue-700">
                     ฿{Number(item.price).toLocaleString("th-TH")}
                   </p>
+                  <p className="text-xs text-slate-500">
+                    เหลือ {item.quantity ?? 1} ชิ้น
+                  </p>
                   {item.location && (
                     <p className="text-xs text-slacdte-500">📍 {item.location}</p>
                   )}

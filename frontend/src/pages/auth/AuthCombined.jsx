@@ -180,6 +180,12 @@ export default function AuthCombined() {
                     }
                     required
                   />
+
+                  <div className="flex justify-end mt-1">
+                    <Link to="/auth/forgot-password" className="text-sm text-blue-600 hover:underline">
+                      ลืมรหัสผ่าน?
+                    </Link>
+                  </div>
                   {loginErr && (
                     <p className="text-sm text-red-600">{loginErr}</p>
                   )}

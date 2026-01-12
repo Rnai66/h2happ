@@ -150,14 +150,16 @@ router.post("/", auth, async (req, res, next) => {
       images = [],
       category = "",
       condition = "good",
+      quantity = 1,
       status,
     } = req.body;
 
     const t = (title || "").toString().trim();
     const p = parsePrice(price);
+    const qty = parseInt(quantity, 10);
 
-    if (!t || !Number.isFinite(p)) {
-      return res.status(400).json({ message: "กรุณากรอกชื่อสินค้าและราคาให้ถูกต้อง" });
+    if (!t || !Number.isFinite(p) || !Number.isFinite(qty) || qty < 0) {
+      return res.status(400).json({ message: "กรุณากรอกชื่อสินค้า, ราคา และจำนวนสินค้าให้ถูกต้อง" });
     }
 
     const sellerId = req.user?._id;
@@ -166,6 +168,7 @@ router.post("/", auth, async (req, res, next) => {
     const item = await Item.create({
       title: t,
       price: p,
+      quantity: qty,
       location: (location || "").toString(),
       description: (description || "").toString(),
       images: Array.isArray(images) ? images : [],
@@ -215,6 +218,12 @@ router.patch("/:id([0-9a-fA-F]{24})", auth, async (req, res, next) => {
       const p = parsePrice(req.body.price);
       if (!Number.isFinite(p)) return res.status(400).json({ message: "Bad price" });
       item.price = p;
+    }
+
+    if (req.body.quantity !== undefined) {
+      const q = parseInt(req.body.quantity, 10);
+      if (!Number.isFinite(q) || q < 0) return res.status(400).json({ message: "Bad quantity" });
+      item.quantity = q;
     }
 
     if (req.body.status !== undefined) {

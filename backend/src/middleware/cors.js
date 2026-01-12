@@ -14,17 +14,16 @@ const allowedOrigins = buildAllowedOrigins();
 
 export const corsOptions = {
   origin(origin, callback) {
-    // อนุญาต non-browser clients ที่ไม่มี Origin
-    if (!origin) return callback(null, true);
+    // 🟢 DEBUG: Allow ALL origins for Android testing
+    return callback(null, true);
 
-    const ok =
-      allowedOrigins.includes(origin) ||
-      origin.endsWith(".vercel.app");  // ✅ รับทุกโดเมนของ Vercel
-
-    if (ok) return callback(null, true);
-
-    console.log("❌ CORS blocked:", origin, "Allowed:", allowedOrigins);
-    return callback(new Error("CORS blocked: " + origin));
+    // if (!origin) return callback(null, true);
+    // const ok =
+    //   allowedOrigins.includes(origin) ||
+    //   origin.endsWith(".vercel.app");
+    // if (ok) return callback(null, true);
+    // console.log("❌ CORS blocked:", origin, "Allowed:", allowedOrigins);
+    // return callback(new Error("CORS blocked: " + origin));
   },
   credentials: true,
   optionsSuccessStatus: 204,

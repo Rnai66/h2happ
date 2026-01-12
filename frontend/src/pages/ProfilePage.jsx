@@ -36,6 +36,7 @@ export default function ProfilePage() {
         setUser({
           name: displayName,
           email: u.email || "-",
+          phone: u.phone || "-",
           role: role === "seller" ? "Seller" : role === "admin" ? "Admin" : role,
           joined: createdAt.toISOString().slice(0, 10),
           avatar:
@@ -112,6 +113,7 @@ export default function ProfilePage() {
             />
             <h2 className="text-2xl mt-4 font-semibold">{user.name}</h2>
             <p className="text-[var(--fg-muted)]">{user.email}</p>
+            <p className="text-[var(--fg-muted)]">{user.phone}</p>
 
             <div className="mt-2 flex justify-center gap-2">
               <H2HTag

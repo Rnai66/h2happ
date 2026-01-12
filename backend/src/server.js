@@ -115,3 +115,4 @@ console.log(
   "🔍 [PayPal] SECRET set?",
   !!(process.env.PAYPAL_SECRET || process.env.PAYPAL_CLIENT_SECRET)
 );
+// Force restart: 1

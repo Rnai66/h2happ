@@ -124,6 +124,9 @@ export default function ItemDetail() {
         {/* หัวข้อ + ราคา */}
         <h1 className="text-2xl font-bold text-blue-700">
           {item.title} — ฿{item.price?.toLocaleString("th-TH")}
+          <span className="ml-3 text-sm font-normal text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
+            เหลือ {item.quantity ?? 1} ชิ้น
+          </span>
         </h1>
 
         <p className="text-sm text-slate-700">{item.description}</p>
@@ -181,6 +184,6 @@ export default function ItemDetail() {
 
 
       </div>
-    </MainLayout>
+    </MainLayout >
   );
 }

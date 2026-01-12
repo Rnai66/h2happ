@@ -53,6 +53,7 @@ export default function SellItem() {
   const [form, setForm] = useState({
     title: "",
     price: "",
+    quantity: "1",
     location: "",
     category: "",
     description: "",
@@ -240,6 +241,7 @@ export default function SellItem() {
 
     if (!form.title.trim()) return setError("กรุณากรอกชื่อสินค้า");
     if (!form.price || Number(form.price) <= 0) return setError("กรุณากรอกราคาให้ถูกต้อง");
+    if (!form.quantity || Number(form.quantity) < 0) return setError("กรุณากรอกจำนวนสินค้าให้ถูกต้อง");
 
     setLoading(true);
     try {
@@ -256,6 +258,7 @@ export default function SellItem() {
       const payload = {
         title: form.title.trim(),
         price: Number(form.price),
+        quantity: Number(form.quantity),
         location: form.location.trim(),
         category: form.category.trim(),
         description: form.description.trim(),
@@ -268,7 +271,7 @@ export default function SellItem() {
       await api.post("/items", payload);
 
       setOkMessage(targetStatus === "active" ? "✅ เผยแพร่สินค้าแล้ว!" : "✅ บันทึกร่างสินค้าแล้ว");
-      setForm({ title: "", price: "", location: "", category: "", description: "", imageUrls: "" });
+      setForm({ title: "", price: "", quantity: "1", location: "", category: "", description: "", imageUrls: "" });
       setFiles([]);
       setUploaded([]);
 
@@ -402,6 +405,19 @@ export default function SellItem() {
                   value={form.location}
                   onChange={handleChange}
                   placeholder="เช่น BTS อโศก, จัดส่งด่วน"
+                  className="h2h-input w-full"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-[var(--text-main)]">จำนวนสินค้า *</label>
+                <input
+                  name="quantity"
+                  type="number"
+                  min="0"
+                  value={form.quantity}
+                  onChange={handleChange}
+                  placeholder="1"
                   className="h2h-input w-full"
                 />
               </div>

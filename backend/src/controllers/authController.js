@@ -13,7 +13,7 @@ function signToken(user) {
 
 export async function register(req, res) {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, phone } = req.body;
     if (!name || !email || !password) {
       return res.status(400).json({ message: "name, email, password are required" });
     }
@@ -25,13 +25,13 @@ export async function register(req, res) {
 
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
-    const user = await User.create({ name, email, password: hash, role: "user" });
+    const user = await User.create({ name, email, password: hash, phone, role: "user" });
 
     const token = signToken(user);
     return res.status(201).json({
       message: "✅ Register success",
       token,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, phone: user.phone }
     });
   } catch (err) {
     return res.status(500).json({ message: "Register failed", error: err.message });

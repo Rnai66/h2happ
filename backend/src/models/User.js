@@ -52,6 +52,10 @@ const userSchema = new mongoose.Schema({
     required: false,
     trim: true,
   },
+
+  // 🆕 Forgot Password fields
+  resetPasswordToken: { type: String, default: null },
+  resetPasswordExpires: { type: Date, default: null },
 },
   { timestamps: true }
 );
