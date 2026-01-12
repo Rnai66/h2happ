@@ -1,19 +1,18 @@
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000";
+import { api } from "./index";
 
 export async function login(userId, name) {
-  const r = await fetch(`${API_BASE}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, name }),
-  });
-  if (!r.ok) throw new Error(`Login failed: ${r.status}`);
-  return r.json(); // { token }
+  // api has baseURL set (e.g. /api), so we just call /auth/login
+  const response = await api.post("/auth/login", { userId, name });
+  return response.data; // { token }
 }
 
 export async function profile(token) {
-  const r = await fetch(`${API_BASE}/api/auth/profile`, {
-    headers: { Authorization: `Bearer ${token}` },
+  // api interceptor already adds token from localStorage, 
+  // but this function takes it as arg. 
+  // If this is used for initial load where localStorage might not match arg, we can pass header explicitly.
+  const response = await api.get("/auth/profile", {
+    headers: { Authorization: `Bearer ${token}` }
   });
-  if (!r.ok) throw new Error(`Profile failed: ${r.status}`);
-  return r.json(); // { user: {_id, name, role} }
+  return response.data; // { user: ... }
 }
+
