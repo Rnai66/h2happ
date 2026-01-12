@@ -3,14 +3,7 @@ import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import Card from "../components/ui/Card";
-
-import { Capacitor } from "@capacitor/core";
-
-let API_BASE = import.meta.env.VITE_API_BASE || "http://10.0.2.2:4010/api";
-
-if (Capacitor.isNativePlatform()) {
-  API_BASE = "http://10.0.2.2:4010/api";
-}
+import { api } from "../api"; // Use shared axios instance
 
 function useQuery() {
   const { search } = useLocation();
@@ -39,9 +32,8 @@ export default function HomeListings() {
         params.set("status", "active");
         if (q) params.set("q", q);
 
-        const res = await fetch(`${API_BASE}/items?` + params.toString());
-        if (!res.ok) throw new Error("โหลดรายการไม่สำเร็จ");
-        const data = await res.json();
+        const res = await api.get(`/items?${params.toString()}`);
+        const data = res.data;
 
         const list = Array.isArray(data) ? data : data.items || [];
         if (!cancelled) setItems(list);
