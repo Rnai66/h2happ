@@ -2,7 +2,7 @@
 import axios from "axios";
 import { Capacitor } from "@capacitor/core";
 
-let API_BASE_URL = import.meta.env.VITE_API_BASE || "http://10.0.2.2:4010/api";
+let API_BASE_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE || "http://10.0.2.2:4010/api";
 
 if (Capacitor.isNativePlatform()) {
   API_BASE_URL = "http://10.0.2.2:4010/api";
