@@ -12,7 +12,8 @@ if (Capacitor.isNativePlatform()) {
 }
 
 // base จริงของ API = <base>/api   เช่น http://localhost:4000/api
-export const API_BASE = RAW_BASE.replace(/\/$/, "") + "/api";
+// Normalizes to ensure it ends with /api, avoiding /api/api
+export const API_BASE = RAW_BASE.replace(/\/+$/, "").replace(/\/api$/, "") + "/api";
 
 /**
  * wrapper เรียก API:

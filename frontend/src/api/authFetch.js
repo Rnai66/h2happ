@@ -8,15 +8,30 @@ if (Capacitor.isNativePlatform()) {
   RAW_BASE = "http://10.0.2.2:4010";
 }
 
-const API_ROOT = RAW_BASE.replace(/\/$/, "").replace(/\/api$/, "");
+const API_ROOT = RAW_BASE.replace(/\/+$/, "").replace(/\/api$/, "") + "/api";
 
 export function getToken() {
   return localStorage.getItem("h2h_token") || "";
 }
 
-function withNoCache(url) {
+function withNoCache(path) {
   // เติม _ts กัน 304/cached response แบบชัวร์
-  const u = new URL(url, API_ROOT);
+  // Check if path is absolute URL
+  if (path.startsWith("http")) return path;
+
+  // Combine with API_ROOT. Note: API_ROOT ends with /api.
+  // If path starts with /, remove it to avoid double slashes if using string concat, 
+  // but URL constructor handles this well usually, EXCEPT if we want to query relative to /api base.
+  // Actually, cleanest way:
+  const base = new URL(API_ROOT);
+  // If path starts with /api/, we should strip it or be careful.
+  // But usually consumers pass "/auth/login". 
+
+  // Let's use simple string concat for predictability with our normalized API_ROOT
+  const cleanPath = path.startsWith("/") ? path : "/" + path;
+  const fullUrl = API_ROOT + cleanPath;
+
+  const u = new URL(fullUrl);
   u.searchParams.set("_ts", String(Date.now()));
   return u.toString();
 }

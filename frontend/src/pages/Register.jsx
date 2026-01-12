@@ -1,10 +1,7 @@
-// frontend/src/pages/auth/Register.jsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
-
-const RAW_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000";
-const API_ROOT = RAW_BASE.replace(/\/$/, "").replace(/\/api$/, "");
+import { api } from "../api";
 
 export default function Register() {
   const nav = useNavigate();
@@ -26,24 +23,15 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_ROOT}/api/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "สมัครสมาชิกไม่สำเร็จ");
-      }
+      const res = await api.post("/auth/register", { name, email, password });
+      const data = res.data;
 
       localStorage.setItem("h2h_token", data.token);
       localStorage.setItem("h2h_user", JSON.stringify(data.user));
 
       nav("/items");
     } catch (e) {
-      setErr(e.message);
+      setErr(e.response?.data?.message || e.message || "สมัครสมาชิกไม่สำเร็จ");
     } finally {
       setLoading(false);
     }

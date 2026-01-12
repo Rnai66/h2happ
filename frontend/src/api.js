@@ -1,5 +1,5 @@
-// frontend/src/api/index.js
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000/api";
+const RAW = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE || "http://localhost:4000/api";
+const API_BASE = RAW.replace(/\/+$/, "").replace(/\/api$/, "") + "/api";
 
 async function jsonFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {

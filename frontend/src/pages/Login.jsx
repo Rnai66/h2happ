@@ -1,10 +1,7 @@
-// frontend/src/pages/auth/Login.jsx
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
-
-const RAW_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000";
-const API_ROOT = RAW_BASE.replace(/\/$/, "").replace(/\/api$/, "");
+import { api } from "../api";
 
 export default function Login() {
   const nav = useNavigate();
@@ -18,17 +15,8 @@ export default function Login() {
     setErr("");
     setLoading(true);
     try {
-      const res = await fetch(`${API_ROOT}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "เข้าสู่ระบบไม่สำเร็จ");
-      }
+      const res = await api.post("/auth/login", { email, password });
+      const data = res.data;
 
       localStorage.setItem("h2h_token", data.token);
       localStorage.setItem("h2h_user", JSON.stringify(data.user));
@@ -36,7 +24,7 @@ export default function Login() {
       // กลับไปหน้าสินค้าหรือหน้าก่อนหน้า
       nav("/items");
     } catch (e) {
-      setErr(e.message);
+      setErr(e.response?.data?.message || e.message || "เข้าสู่ระบบไม่สำเร็จ");
     } finally {
       setLoading(false);
     }
