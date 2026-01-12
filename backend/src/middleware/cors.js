@@ -13,18 +13,9 @@ function buildAllowedOrigins() {
 const allowedOrigins = buildAllowedOrigins();
 
 export const corsOptions = {
-  origin(origin, callback) {
-    // 🟢 DEBUG: Allow ALL origins for Android testing
-    return callback(null, true);
-
-    // if (!origin) return callback(null, true);
-    // const ok =
-    //   allowedOrigins.includes(origin) ||
-    //   origin.endsWith(".vercel.app");
-    // if (ok) return callback(null, true);
-    // console.log("❌ CORS blocked:", origin, "Allowed:", allowedOrigins);
-    // return callback(new Error("CORS blocked: " + origin));
-  },
+  // 🟢 DEBUG: Log and Allow ALL origins
+  console.log(`[CORS] Request from origin: ${origin}`);
+  return callback(null, true);
   credentials: true,
   optionsSuccessStatus: 204,
 };
