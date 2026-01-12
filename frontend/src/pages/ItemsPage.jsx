@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+// import api from "../lib/api"; // <-- เดิมใช้ lib/api แต่เราจะใช้ api/index ที่แก้แล้วให้ชัวร์ หรือใช้ lib/api ก็ได้ถ้าแก้มันแล้ว
+// แต่เพื่อความชัวร์ ใช้ api/index ดีกว่า หรือเช็คว่า lib/api แก้ยัง -> แก้แล้ว
+// งั้นใช้ lib/api ต่อไป แต่ลบ hardcoded BASE ทิ้ง
 import api from "../lib/api";
 import { getToken } from "../lib/auth";
 
@@ -11,7 +14,7 @@ export default function ItemsPage() {
   const [ordersByItem, setOrdersByItem] = useState({});
   const lastLogRef = useRef("");
 
-  const BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+  // const BASE = ... (ลบออก)
   const tokenLen = (getToken() || "").length;
 
   function log(...args) {

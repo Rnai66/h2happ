@@ -1,21 +1,9 @@
-// frontend/src/pages/items/Items.jsx
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import Card from "../../components/ui/Card";
 import { useAuth } from "../../context/AuthContext";
-
-// รองรับทั้ง http://localhost:4000 และ http://localhost:4000/api
-import { Capacitor } from "@capacitor/core";
-
-// รองรับทั้ง http://localhost:4000 และ http://localhost:4000/api
-let RAW_BASE = import.meta.env.VITE_API_BASE || "http://10.0.2.2:4010";
-
-if (Capacitor.isNativePlatform()) {
-  RAW_BASE = "http://10.0.2.2:4010";
-}
-
-const API_ROOT = RAW_BASE.replace(/\/$/, "").replace(/\/api$/, "");
+import { api } from "../../api"; // Use shared axios instance
 
 function useQuery() {
   const { search } = useLocation();
@@ -28,10 +16,7 @@ export default function Items() {
   const q = query.get("q") || "";
 
   const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState("");
-  const [showMyItems, setShowMyItems] = useState(false);
-
+  // ...
   useEffect(() => {
     let cancelled = false;
     async function load() {
@@ -51,17 +36,17 @@ export default function Items() {
           params.set("sellerId", user._id);
         }
 
-        const res = await fetch(`${API_ROOT}/api/items?` + params.toString());
-        if (!res.ok) throw new Error("โหลดรายการไม่สำเร็จ");
+        const res = await api.get(`/items?${params.toString()}`);
+        // res.data is the response body
+        const data = res.data;
 
-        const data = await res.json();
         const list = Array.isArray(data)
           ? data
           : data.items || data.data?.items || [];
 
         if (!cancelled) setItems(list);
       } catch (e) {
-        if (!cancelled) setErr(e.message);
+        if (!cancelled) setErr(e.response?.data?.message || e.message);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -69,6 +54,8 @@ export default function Items() {
     load();
     return () => (cancelled = true);
   }, [q, showMyItems, user]);
+
+
 
   return (
     <MainLayout>
